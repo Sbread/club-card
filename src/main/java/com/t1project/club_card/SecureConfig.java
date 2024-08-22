@@ -20,7 +20,8 @@ public class SecureConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/login", "/register").permitAll()
-                .requestMatchers("club_admin/**").hasAnyRole("ADMIN", "SUPERUSER")
+                .requestMatchers("/profile").permitAll()
+                .requestMatchers("/club_admin/**").hasAnyRole("ROLE_ADMIN", "ROLE_SUPERUSER")
                 .anyRequest().authenticated()
         ).formLogin(form -> form
                 .loginPage("/login")
@@ -41,7 +42,7 @@ public class SecureConfig {
             }
             return new org.springframework.security.core.userdetails.User(clubMember.getUserName(),
                     clubMember.getPassword(),
-                    AuthorityUtils.createAuthorityList(String.valueOf(clubMember.getRole())));
+                    AuthorityUtils.createAuthorityList(clubMember.getRole()));
         };
     }
 }

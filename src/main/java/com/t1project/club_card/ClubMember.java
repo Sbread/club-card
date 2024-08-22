@@ -1,19 +1,20 @@
 package com.t1project.club_card;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-@Entity
+import java.util.Collection;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClubMember {
+public class ClubMember implements UserDetails {
     @Id
-    @GeneratedValue
     private Integer id;
     private String userName;
     private String password;
@@ -21,6 +22,21 @@ public class ClubMember {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private Role role;
-    private Privilege privilege;
+    private String role;
+    private String privilege;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return userName;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // need to add blocking
+    }
 }

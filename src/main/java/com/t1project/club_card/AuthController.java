@@ -30,7 +30,7 @@ public class AuthController {
     @PostMapping("/register")
     public String registerUser(ClubMember clubMember) {
         clubMember.setPassword(passwordEncoder.encode(clubMember.getPassword()));
-        clubMember.setRole(Role.MEMBER);
+        clubMember.setRole("ROLE_MEMBER");
         clubMemberRepository.save(clubMember);
         return "redirect:/login";
     }
