@@ -1,10 +1,8 @@
 CREATE DATABASE IF NOT EXISTS club_cards;
 
-USE club_cards;
-
 CREATE TABLE ClubMembers (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    userName VARCHAR(255) NOT NULL UNIQUE,
+    username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     firstName VARCHAR(255) NOT NULL,
     lastName VARCHAR(255) NOT NULL,

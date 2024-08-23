@@ -2,7 +2,6 @@ package com.t1project.club_card;
 
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -23,11 +22,11 @@ public class DbConxInit {
         return initializer;
     }
 
-    @Bean
-    public CommandLineRunner init(ClubMemberRepository repo) {
-        return args -> {
-//            if (args.length > 0 && Objects.equals(args[0], "1")) {
-//                repo.save(new ClubMember(0, "superuser", "supass1234"));} // maybe add superuser here
-        };
-    }
+//    @Bean
+//    public CommandLineRunner init(ClubMemberRepository repo) {
+//        return args -> {
+////            if (args.length > 0 && Objects.equals(args[0], "1")) {
+////                repo.save(new ClubMember(0, "superuser", "supass1234"));} // maybe add superuser here
+//        };
+//    }
 }

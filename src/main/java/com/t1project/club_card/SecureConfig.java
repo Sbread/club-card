@@ -3,9 +3,6 @@ package com.t1project.club_card;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,17 +29,17 @@ public class SecureConfig {
         return http.build();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(ClubMemberRepository clubMemberRepository)
-            throws UsernameNotFoundException {
-        return username -> {
-            ClubMember clubMember = clubMemberRepository.findMemberByUsername(username);
-            if (clubMember == null) {
-                throw new UsernameNotFoundException("User with username: " + username + " not found");
-            }
-            return new org.springframework.security.core.userdetails.User(clubMember.getUserName(),
-                    clubMember.getPassword(),
-                    AuthorityUtils.createAuthorityList(clubMember.getRole()));
-        };
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService(ClubMemberRepository clubMemberRepository)
+//            throws UsernameNotFoundException {
+//        return username -> {
+//            ClubMember clubMember = clubMemberRepository.findMemberByUsername(username);
+//            if (clubMember == null) {
+//                throw new UsernameNotFoundException("User with username: " + username + " not found");
+//            }
+//            return new org.springframework.security.core.userdetails.User(clubMember.getUsername(),
+//                    clubMember.getPassword(),
+//                    AuthorityUtils.createAuthorityList(clubMember.getRole()));
+//        };
+//    }
 }
