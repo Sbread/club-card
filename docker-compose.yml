@@ -1,15 +1,27 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_db
+    restart: on-failure
+    environment:
+      POSTGRES_USER: camp
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   springboot-app:
-    image: club-card:latest
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      - ENV_DATASOURCE_URL=jdbc:postgresql://localhost:5432/club_cards
+      - ENV_DATASOURCE_URL=jdbc:postgresql://postgres:5432/club_cards
       - ENV_DATASOURCE_USERNAME=camp
       - ENV_DATASOURCE_PASSWORD=1234
       - SPRING_PROFILES_ACTIVE=prod
+
+volumes:
+  postgres_data:
