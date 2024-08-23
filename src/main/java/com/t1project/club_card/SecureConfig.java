@@ -40,7 +40,7 @@ public class SecureConfig {
             if (clubMember == null) {
                 throw new UsernameNotFoundException("User with username: " + username + " not found");
             }
-            return new org.springframework.security.core.userdetails.User(clubMember.getUserName(),
+            return new org.springframework.security.core.userdetails.User(clubMember.getUsername(),
                     clubMember.getPassword(),
                     AuthorityUtils.createAuthorityList(clubMember.getRole()));
         };
