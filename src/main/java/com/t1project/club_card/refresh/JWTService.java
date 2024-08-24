@@ -18,10 +18,8 @@ public class JWTService {
     public static final String SECRET = "56DW526FEF54Q4D8FEW445D8WD78DD8QWF8QWF48W4F8W";
     public static final int TOKEN_LIVING_TIME = 90000;
 
-    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET));
-
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(token).getPayload();
     }
 
     public String extractUsername(String token) {
@@ -59,6 +57,11 @@ public class JWTService {
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + TOKEN_LIVING_TIME))
-                .signWith(SECRET_KEY, Jwts.SIG.HS256).compact();
+                .signWith(getSecretKey(), Jwts.SIG.HS256).compact();
+    }
+
+    private SecretKey getSecretKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

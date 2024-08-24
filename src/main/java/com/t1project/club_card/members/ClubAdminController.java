@@ -1,4 +1,4 @@
-package com.t1project.club_card;
+package com.t1project.club_card.members;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
