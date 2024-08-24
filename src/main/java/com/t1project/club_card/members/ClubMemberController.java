@@ -23,7 +23,7 @@ public class ClubMemberController {
         return currentClubMember;
     }
 
-    @PutMapping
+    @PostMapping
     public Mono<ClubMember> changeEmail(@RequestBody ClubMember newClubMember) {
         return clubMemberRepository.findMemberByUsername(currentClubMember.getUsername()).flatMap(
                 clubMember -> {

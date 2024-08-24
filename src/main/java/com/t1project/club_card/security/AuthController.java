@@ -1,10 +1,9 @@
-package com.t1project.club_card;
+package com.t1project.club_card.security;
 
 import com.t1project.club_card.members.ClubMember;
 import com.t1project.club_card.members.ClubMemberRepository;
 import com.t1project.club_card.refresh.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,25 +24,22 @@ public class AuthController {
     private JWTService jwtService;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private CustomReactiveAuthenticationManager customReactiveAuthenticationManager;
 
     @Autowired
     RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public Mono<JwtResponseDTO> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
-        if (authentication.isAuthenticated()) {
-            return refreshTokenService.createRefreshToken(authRequestDTO.getUsername())
-                    .map(refreshToken -> JwtResponseDTO.builder()
-                            .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
-                            .token(refreshToken.getToken())
-                            .build()
-                    );
-        } else {
-            return Mono.error(new UsernameNotFoundException("Invalid user"));
-        }
+        Authentication authenticationToken = new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword());
+        return customReactiveAuthenticationManager.authenticate(authenticationToken)
+                .flatMap(authentication -> refreshTokenService.createRefreshToken(authRequestDTO.getUsername())
+                        .map(refreshToken -> JwtResponseDTO.builder()
+                                .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
+                                .token(refreshToken.getToken())
+                                .build()))
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Invalid user credentials")))
+                .onErrorResume(e -> Mono.error(new RuntimeException("Authentication failed", e)));
     }
 
     @PostMapping("/refreshToken")
