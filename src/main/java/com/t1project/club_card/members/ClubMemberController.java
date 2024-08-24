@@ -1,4 +1,4 @@
-package com.t1project.club_card;
+package com.t1project.club_card.members;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +23,13 @@ public class ClubMemberController {
         return currentClubMember;
     }
 
-    @PutMapping
-    public Mono<ClubMember> changeEmail(@RequestBody String string) {
-        ClubMember clubMember = clubMemberRepository.findMemberByUsername(currentClubMember.getUsername());
-        clubMember.setEmail(string);
-        return clubMemberRepository.save(clubMember);
+    @PostMapping
+    public Mono<ClubMember> changeEmail(@RequestBody ClubMember newClubMember) {
+        return clubMemberRepository.findMemberByUsername(currentClubMember.getUsername()).flatMap(
+                clubMember -> {
+                    clubMember.setEmail(newClubMember.getEmail());
+                    return clubMemberRepository.save(clubMember);
+                }
+        );
     }
 }
