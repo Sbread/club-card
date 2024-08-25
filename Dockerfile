@@ -10,7 +10,7 @@ COPY src ./src
 # Сборка приложения и упаковка в JAR файл
 RUN mvn clean package -DskipTests
 
-FROM openjdk:22-jdk-slim
+FROM eclipse-temurin:22-ubi9-minimal
 
 # Создание рабочей директории для приложения
 WORKDIR /app
