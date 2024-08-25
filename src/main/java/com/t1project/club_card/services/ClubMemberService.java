@@ -1,11 +1,10 @@
 package com.t1project.club_card.services;
 
+import com.t1project.club_card.utils.Utils;
 import com.t1project.club_card.dto.RegisterRequestDTO;
 import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -18,10 +17,6 @@ public class ClubMemberService {
     @Autowired
     private ClubMemberRepository clubMemberRepository;
 
-    private PasswordEncoder getPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
 
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
         final Set<String> roles = new HashSet<>();
@@ -30,7 +25,7 @@ public class ClubMemberService {
         privileges.add("STANDARD");
         final ClubMember clubMember = ClubMember.builder()
                 .username(registerRequestDTO.getUsername())
-                .password(getPasswordEncoder().encode(registerRequestDTO.getPassword()))
+                .password(Utils.bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()))
                 .firstName(null)
                 .lastName(null)
                 .email(registerRequestDTO.getEmail())
@@ -60,7 +55,7 @@ public class ClubMemberService {
     public Mono<ClubMember> changePassword(String username, String newPassword) {
         return clubMemberRepository.findMemberByUsername(username)
                 .flatMap(clubMember -> {
-                    clubMember.setPassword(getPasswordEncoder().encode(newPassword));
+                    clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(newPassword));
                     return clubMemberRepository.save(clubMember);
                 });
     }
