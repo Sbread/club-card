@@ -1,5 +1,6 @@
-package com.t1project.club_card.members;
+package com.t1project.club_card.security;
 
+import com.t1project.club_card.models.ClubMember;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,8 +19,8 @@ public class ClubMemberUserDetails extends ClubMember implements UserDetails {
         this.username = clubMember.getUsername();
         this.password = clubMember.getPassword();
         List<GrantedAuthority> auth = new ArrayList<>();
-        for (ClubMemberRole clubMemberRole : clubMember.getRoles()) {
-            auth.add(new SimpleGrantedAuthority(clubMemberRole.getRole().toUpperCase()));
+        for (String clubMemberRole : clubMember.getRoles()) {
+            auth.add(new SimpleGrantedAuthority(clubMemberRole));
         }
         this.authorities = auth;
     }

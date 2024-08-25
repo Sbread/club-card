@@ -1,6 +1,8 @@
-package com.t1project.club_card.refresh;
+package com.t1project.club_card.services;
 
-import com.t1project.club_card.members.ClubMemberRepository;
+import com.t1project.club_card.models.RefreshToken;
+import com.t1project.club_card.repositories.ClubMemberRepository;
+import com.t1project.club_card.repositories.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;

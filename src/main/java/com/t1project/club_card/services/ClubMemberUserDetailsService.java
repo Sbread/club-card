@@ -1,5 +1,7 @@
-package com.t1project.club_card.members;
+package com.t1project.club_card.services;
 
+import com.t1project.club_card.security.ClubMemberUserDetails;
+import com.t1project.club_card.repositories.ClubMemberRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,5 +1,8 @@
-package com.t1project.club_card.members;
+package com.t1project.club_card.controllers;
 
+import com.t1project.club_card.services.ClubMemberService;
+import com.t1project.club_card.models.ClubMember;
+import com.t1project.club_card.repositories.ClubMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;

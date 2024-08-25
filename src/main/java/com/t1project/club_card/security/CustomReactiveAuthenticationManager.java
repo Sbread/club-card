@@ -1,6 +1,6 @@
 package com.t1project.club_card.security;
 
-import com.t1project.club_card.members.ClubMemberUserDetailsService;
+import com.t1project.club_card.services.ClubMemberUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
