@@ -4,8 +4,6 @@ import com.t1project.club_card.dto.RegisterRequestDTO;
 import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,19 +18,10 @@ public class ClubMemberService {
     @Autowired
     private ClubMemberRepository clubMemberRepository;
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    public ClubMember getCurrentClubMember() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-
-            if (principal instanceof ClubMember) {
-                return (ClubMember) principal;
-            }
-        }
-        return null;
+    private PasswordEncoder getPasswordEncoder() {
+        return new BCryptPasswordEncoder();
     }
+
 
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
         final Set<String> roles = new HashSet<>();
@@ -41,7 +30,7 @@ public class ClubMemberService {
         privileges.add("STANDARD");
         final ClubMember clubMember = ClubMember.builder()
                 .username(registerRequestDTO.getUsername())
-                .password(passwordEncoder.encode(registerRequestDTO.getPassword()))
+                .password(getPasswordEncoder().encode(registerRequestDTO.getPassword()))
                 .firstName(null)
                 .lastName(null)
                 .email(registerRequestDTO.getEmail())
@@ -50,5 +39,29 @@ public class ClubMemberService {
                 .privilege(privileges).build();
         System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);
+    }
+
+    public Mono<ClubMember> changeEmail(String username, String newEmail) {
+        return clubMemberRepository.findMemberByUsername(username)
+                .flatMap(clubMember -> {
+                    clubMember.setEmail(newEmail);
+                    return clubMemberRepository.save(clubMember);
+                });
+    }
+
+    public Mono<ClubMember> changePhoneNumber(String username, String newPhoneNumber) {
+        return clubMemberRepository.findMemberByUsername(username)
+                .flatMap(clubMember -> {
+                    clubMember.setPhoneNumber(newPhoneNumber);
+                    return clubMemberRepository.save(clubMember);
+                });
+    }
+
+    public Mono<ClubMember> changePassword(String username, String newPassword) {
+        return clubMemberRepository.findMemberByUsername(username)
+                .flatMap(clubMember -> {
+                    clubMember.setPassword(getPasswordEncoder().encode(newPassword));
+                    return clubMemberRepository.save(clubMember);
+                });
     }
 }

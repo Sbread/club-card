@@ -3,6 +3,7 @@ package com.t1project.club_card.security;
 import com.t1project.club_card.services.ClubMemberUserDetailsService;
 import com.t1project.club_card.services.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +15,8 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+
+import java.util.Objects;
 
 @Component
 public class JwtAuthFilter implements WebFilter {
@@ -35,6 +38,13 @@ public class JwtAuthFilter implements WebFilter {
         } else {
             token = null;
         }
+//        final String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+//        HttpCookie accessTokenHttpCookie = exchange.getRequest().getCookies().getFirst("accessToken");
+//        String token = accessTokenHttpCookie == null ? null : accessTokenHttpCookie.getValue();
+//        if (token == null) {
+//            return chain.filter(exchange);
+//        }
+//        String username = jwtService.extractUsername(token);
         if (username != null) {
             return clubMemberUserDetailsService.findByUsername(username)
                     .flatMap(userDetails -> {
