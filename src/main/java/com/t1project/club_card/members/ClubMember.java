@@ -28,8 +28,8 @@ public class ClubMember {
     private String email;
     @Column("phoneNumber")
     private String phoneNumber;
-    @Column("roles")
+    @Column("role")
     private Set<ClubMemberRole> roles;
-    @Column("privileges")
+    @Column("privilege")
     private Set<ClubMemberPrivilege> privilege;
 }

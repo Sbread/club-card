@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 
-@Table
+@Table("RefreshTokens")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
