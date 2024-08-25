@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS ClubMembers (
     lastName VARCHAR(255),
     email VARCHAR(255) UNIQUE,
     phoneNumber VARCHAR(20),
-    role JSONB,
-    privilege JSONB
+    role TEXT[],
+    privilege TEXT[]
 );
 
 CREATE TABLE IF NOT EXISTS RefreshTokens (
