@@ -1,5 +1,6 @@
-package com.t1project.club_card.members;
+package com.t1project.club_card.repositories;
 
+import com.t1project.club_card.models.ClubMember;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;

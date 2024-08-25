@@ -1,6 +1,7 @@
-package com.t1project.club_card.members;
+package com.t1project.club_card.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -13,6 +14,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ClubMember {
     @Id
     private Integer id;
@@ -29,7 +31,7 @@ public class ClubMember {
     @Column("phoneNumber")
     private String phoneNumber;
     @Column("role")
-    private Set<ClubMemberRole> roles;
+    private Set<String> roles;
     @Column("privilege")
-    private Set<ClubMemberPrivilege> privilege;
+    private Set<String> privilege;
 }

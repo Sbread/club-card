@@ -1,4 +1,4 @@
-package com.t1project.club_card.refresh;
+package com.t1project.club_card.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

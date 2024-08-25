@@ -1,4 +1,5 @@
-package com.t1project.club_card.refresh;
+package com.t1project.club_card.dto;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthRequestDTO {
+public class RegisterRequestDTO {
     private String username;
     private String password;
+    private String email;
 }
