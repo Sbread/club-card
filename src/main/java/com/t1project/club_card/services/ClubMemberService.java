@@ -42,12 +42,13 @@ public class ClubMemberService {
         final ClubMember clubMember = ClubMember.builder()
                 .username(registerRequestDTO.getUsername())
                 .password(passwordEncoder.encode(registerRequestDTO.getPassword()))
-                .firstName("")
-                .lastName("")
+                .firstName(null)
+                .lastName(null)
                 .email(registerRequestDTO.getEmail())
-                .phoneNumber("")
+                .phoneNumber(null)
                 .roles(roles)
                 .privilege(privileges).build();
+        System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);
     }
 }
