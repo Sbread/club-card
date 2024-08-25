@@ -29,7 +29,7 @@ public class JwtAuthFilter implements WebFilter {
         final String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         String token;
         String username = null;
-        if (authHeader != null && authHeader.startsWith("Bearer ")) { // maybe add header start from smth string
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             username = jwtService.extractUsername(token);
         } else {

@@ -2,8 +2,11 @@ package com.t1project.club_card.security;
 
 import com.t1project.club_card.members.ClubMember;
 import com.t1project.club_card.members.ClubMemberRepository;
+import com.t1project.club_card.members.ClubMemberService;
 import com.t1project.club_card.refresh.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,6 +25,9 @@ public class AuthController {
 
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private ClubMemberService clubMemberService;
 
     @Autowired
     private CustomReactiveAuthenticationManager customReactiveAuthenticationManager;
@@ -56,17 +62,9 @@ public class AuthController {
     }
 
 
-    @GetMapping("/register")
-    public String register(Model model) {
-        model.addAttribute("user", new ClubMember());
-        return "register";
+    @PostMapping("/register")
+    public Mono<ResponseEntity<String>> registerClubMember(@RequestBody ClubMember clubMember) {
+        return clubMemberService.registerClubMember(clubMember)
+                .map(saved -> ResponseEntity.status(HttpStatus.CREATED).body("Registered successfully"));
     }
-
-//    @PostMapping("/register")
-//    public String registerUser(ClubMember clubMember) {
-//        clubMember.setPassword(passwordEncoder.encode(clubMember.getPassword()));
-//        clubMember.setRole("ROLE_MEMBER");
-//        clubMemberRepository.save(clubMember);
-//        return "redirect:/login";
-//    }
 }
