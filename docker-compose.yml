@@ -1,11 +1,13 @@
 services:
   postgres:
     image: postgres:16
-    container_name: postgres_db
+    container_name: postgres_db_24
     restart: on-failure
     environment:
       POSTGRES_USER: camp
       POSTGRES_PASSWORD: 1234
+    ports:
+      - "5444:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
