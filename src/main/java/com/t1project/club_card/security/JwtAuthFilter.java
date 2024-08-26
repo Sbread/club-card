@@ -3,6 +3,7 @@ package com.t1project.club_card.security;
 import com.t1project.club_card.services.ClubMemberUserDetailsService;
 import com.t1project.club_card.services.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,7 +42,7 @@ public class JwtAuthFilter implements WebFilter {
                         if (jwtService.validateToken(token, userDetails)) {
                             UsernamePasswordAuthenticationToken authenticationToken
                                     = new UsernamePasswordAuthenticationToken(
-                                            userDetails, null, userDetails.getAuthorities());
+                                    userDetails, null, userDetails.getAuthorities());
                             SecurityContext securityContext = new SecurityContextImpl(authenticationToken);
                             return chain.filter(exchange).contextWrite(
                                     ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));

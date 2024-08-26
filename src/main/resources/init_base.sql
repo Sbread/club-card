@@ -1,13 +1,14 @@
 CREATE TABLE IF NOT EXISTS ClubMembers (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     firstName VARCHAR(255),
     lastName VARCHAR(255),
     email VARCHAR(255) UNIQUE,
     phoneNumber VARCHAR(20),
-    role TEXT[],
-    privilege TEXT[]
+    privilege VARCHAR(20),
+    isLocked boolean NOT NULL,
+    role TEXT[]
 );
 
 CREATE TABLE IF NOT EXISTS RefreshTokens (

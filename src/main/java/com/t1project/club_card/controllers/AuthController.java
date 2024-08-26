@@ -4,7 +4,6 @@ import com.t1project.club_card.dto.AuthRequestDTO;
 import com.t1project.club_card.dto.JwtResponseDTO;
 import com.t1project.club_card.dto.RefreshTokenRequestDTO;
 import com.t1project.club_card.dto.RegisterRequestDTO;
-import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.security.CustomReactiveAuthenticationManager;
@@ -16,15 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
-
-@Controller
+@RestController
 public class AuthController {
 
     @Autowired
@@ -44,7 +40,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public Mono<JwtResponseDTO> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
-        Authentication authenticationToken = new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword());
+        Authentication authenticationToken
+                = new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword());
         return customReactiveAuthenticationManager.authenticate(authenticationToken)
                 .flatMap(authentication -> refreshTokenService.createRefreshToken(authRequestDTO.getUsername())
                         .map(refreshToken -> JwtResponseDTO.builder()
