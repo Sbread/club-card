@@ -9,7 +9,7 @@ services:
     ports:
       - "5444:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_24:/var/lib/postgresql/data
 
   springboot-app:
     build:
@@ -17,10 +17,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    depends_on:
+      - postgres
     environment:
-      - ENV_DATASOURCE_URL=r2dbc:postgresql://localhost:5432/club_cards
+      - ENV_DATASOURCE_URL=r2dbc:postgresql://postgres:5432/club_cards
       - ENV_DATASOURCE_USERNAME=camp
       - ENV_DATASOURCE_PASSWORD=1234
 
 volumes:
-  postgres_data:
+  postgres_data_24:
