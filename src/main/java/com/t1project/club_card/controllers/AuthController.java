@@ -5,19 +5,19 @@ import com.t1project.club_card.dto.JwtResponseDTO;
 import com.t1project.club_card.dto.RefreshTokenRequestDTO;
 import com.t1project.club_card.dto.RegisterRequestDTO;
 import com.t1project.club_card.repositories.ClubMemberRepository;
+import com.t1project.club_card.services.BlacklistTokenService;
 import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.security.CustomReactiveAuthenticationManager;
 import com.t1project.club_card.services.JWTService;
 import com.t1project.club_card.services.RefreshTokenService;
+import com.t1project.club_card.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -33,10 +33,13 @@ public class AuthController {
     private ClubMemberService clubMemberService;
 
     @Autowired
+    private BlacklistTokenService blacklistTokenService;
+
+    @Autowired
     private CustomReactiveAuthenticationManager customReactiveAuthenticationManager;
 
     @Autowired
-    RefreshTokenService refreshTokenService;
+    private RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public Mono<JwtResponseDTO> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
@@ -72,5 +75,14 @@ public class AuthController {
                 .map(saved -> ResponseEntity.status(HttpStatus.CREATED).body("Registered successfully"))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Registration failed\n" + e.getMessage())));
+    }
+
+    @GetMapping("/logout")
+    public Mono<ResponseEntity<String>> logout(@RequestHeader("Authorization") String authHeader) {
+        String token = Utils.extractBearerToken(authHeader);
+        return blacklistTokenService.saveToken(token)
+                .map(saved -> ResponseEntity.status(HttpStatus.OK).body("Logout successfully"))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Logout failed\n" + e.getMessage())));
     }
 }

@@ -18,3 +18,8 @@ CREATE TABLE IF NOT EXISTS RefreshTokens (
     club_member_id INTEGER,
     FOREIGN KEY (club_member_id) REFERENCES ClubMembers(id)
 );
+
+CREATE TABLE IF NOT EXISTS BlacklistTokens (
+    id SERIAL PRIMARY KEY,
+    token VARCHAR(255)
+);

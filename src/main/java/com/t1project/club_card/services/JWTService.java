@@ -16,7 +16,7 @@ import java.util.function.Function;
 @Component
 public class JWTService {
     public static final String SECRET = "56DW526FEF54Q4D8FEW445D8WD78DD8QWF8QWF48W4F8W";
-    public static final int TOKEN_LIVING_TIME = 90000;
+    public static final int TOKEN_LIVING_TIME = 900000;
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(token).getPayload();
