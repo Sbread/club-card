@@ -16,8 +16,6 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
-
 @Component
 public class JwtAuthFilter implements WebFilter {
 
@@ -38,20 +36,13 @@ public class JwtAuthFilter implements WebFilter {
         } else {
             token = null;
         }
-//        final String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-//        HttpCookie accessTokenHttpCookie = exchange.getRequest().getCookies().getFirst("accessToken");
-//        String token = accessTokenHttpCookie == null ? null : accessTokenHttpCookie.getValue();
-//        if (token == null) {
-//            return chain.filter(exchange);
-//        }
-//        String username = jwtService.extractUsername(token);
         if (username != null) {
             return clubMemberUserDetailsService.findByUsername(username)
                     .flatMap(userDetails -> {
                         if (jwtService.validateToken(token, userDetails)) {
                             UsernamePasswordAuthenticationToken authenticationToken
                                     = new UsernamePasswordAuthenticationToken(
-                                            userDetails, null, userDetails.getAuthorities());
+                                    userDetails, null, userDetails.getAuthorities());
                             SecurityContext securityContext = new SecurityContextImpl(authenticationToken);
                             return chain.filter(exchange).contextWrite(
                                     ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));

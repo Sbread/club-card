@@ -28,7 +28,7 @@ public class CustomReactiveAuthenticationManager implements ReactiveAuthenticati
                     if (Utils.bCryptPasswordEncoder.matches(rawPassword, userDetails.getPassword())) {
                         UsernamePasswordAuthenticationToken authenticationToken
                                 = new UsernamePasswordAuthenticationToken(
-                                        userDetails, null, userDetails.getAuthorities());
+                                userDetails, null, userDetails.getAuthorities());
                         return Mono.just(authenticationToken);
                     } else {
                         return Mono.error(new CredentialException("Invalid credential"));

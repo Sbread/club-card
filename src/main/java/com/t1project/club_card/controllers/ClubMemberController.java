@@ -59,7 +59,7 @@ public class ClubMemberController {
 
     @PostMapping("/change-password")
     public Mono<ResponseEntity<String>> changePassword(@RequestBody ChangeFieldDTO changeFieldDTO,
-                                                          @AuthenticationPrincipal ClubMember clubMember) {
+                                                       @AuthenticationPrincipal ClubMember clubMember) {
         return clubMemberService.changePassword(clubMember.getUsername(), changeFieldDTO.getNewFieldValue())
                 .map(saved -> ResponseEntity.status(HttpStatus.OK).body("Password changed successfully"))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
