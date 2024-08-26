@@ -1,6 +1,5 @@
 package com.t1project.club_card.controllers;
 
-
 import com.t1project.club_card.dto.ChangeUsernameFieldDTO;
 import com.t1project.club_card.dto.ChangeUsernameIsLockedDTO;
 import com.t1project.club_card.models.ClubMember;
