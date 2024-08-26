@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
-
 @Controller
 public class AuthController {
 
@@ -42,7 +40,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public Mono<JwtResponseDTO> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
-        Authentication authenticationToken = new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword());
+        Authentication authenticationToken
+                = new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword());
         return customReactiveAuthenticationManager.authenticate(authenticationToken)
                 .flatMap(authentication -> refreshTokenService.createRefreshToken(authRequestDTO.getUsername())
                         .map(refreshToken -> JwtResponseDTO.builder()

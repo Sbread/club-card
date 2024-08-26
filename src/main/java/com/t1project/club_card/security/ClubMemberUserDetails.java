@@ -13,11 +13,13 @@ public class ClubMemberUserDetails extends ClubMember implements UserDetails {
 
     private final String username;
     private final String password;
+    private final boolean isLocked;
     Collection<? extends GrantedAuthority> authorities;
 
     public ClubMemberUserDetails(ClubMember clubMember) {
         this.username = clubMember.getUsername();
         this.password = clubMember.getPassword();
+        this.isLocked = clubMember.isLocked();
         List<GrantedAuthority> auth = new ArrayList<>();
         for (String clubMemberRole : clubMember.getRoles()) {
             auth.add(new SimpleGrantedAuthority(clubMemberRole));
@@ -42,7 +44,7 @@ public class ClubMemberUserDetails extends ClubMember implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !isLocked;
     }
 
     @Override
@@ -59,4 +61,6 @@ public class ClubMemberUserDetails extends ClubMember implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
 }

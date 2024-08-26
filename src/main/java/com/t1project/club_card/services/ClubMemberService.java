@@ -21,8 +21,6 @@ public class ClubMemberService {
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
         final Set<String> roles = new HashSet<>();
         roles.add("ROLE_USER");
-        final Set<String> privileges = new HashSet<>();
-        privileges.add("STANDARD");
         final ClubMember clubMember = ClubMember.builder()
                 .username(registerRequestDTO.getUsername())
                 .password(Utils.bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()))
@@ -30,8 +28,10 @@ public class ClubMemberService {
                 .lastName(null)
                 .email(registerRequestDTO.getEmail())
                 .phoneNumber(null)
+                .privilege("STANDARD")
+                .isLocked(false)
                 .roles(roles)
-                .privilege(privileges).build();
+                .build();
         System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);
     }

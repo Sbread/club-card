@@ -30,8 +30,10 @@ public class ClubMember {
     private String email;
     @Column("phoneNumber")
     private String phoneNumber;
+    @Column("privilege")
+    private String privilege;
+    @Column("isLocked")
+    private boolean isLocked;
     @Column("role")
     private Set<String> roles;
-    @Column("privilege")
-    private Set<String> privilege;
 }

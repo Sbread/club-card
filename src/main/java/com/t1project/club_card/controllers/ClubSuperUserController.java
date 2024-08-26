@@ -1,5 +1,6 @@
 package com.t1project.club_card.controllers;
 
+
 import com.t1project.club_card.dto.ChangeUsernameFieldDTO;
 import com.t1project.club_card.dto.ChangeUsernameIsLockedDTO;
 import com.t1project.club_card.models.ClubMember;
@@ -13,9 +14,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-@RequestMapping(value = "/club_admin")
-public class ClubAdminController {
+@PreAuthorize("hasAuthority('ROLE_SUPERUSER')")
+@RequestMapping(value = "/club_superuser")
+public class ClubSuperUserController {
 
     @Autowired
     private ClubAdminService clubAdminService;

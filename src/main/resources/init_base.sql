@@ -6,8 +6,9 @@ CREATE TABLE IF NOT EXISTS ClubMembers (
     lastName VARCHAR(255),
     email VARCHAR(255) UNIQUE,
     phoneNumber VARCHAR(20),
-    role TEXT[],
-    privilege TEXT[]
+    privilege VARCHAR(20),
+    isLocked boolean NOT NULL,
+    role TEXT[]
 );
 
 CREATE TABLE IF NOT EXISTS RefreshTokens (
