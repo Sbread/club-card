@@ -1,5 +1,6 @@
 package com.t1project.club_card.services;
 
+import com.t1project.club_card.dto.ChangeAllUserFieldsDTO;
 import com.t1project.club_card.utils.Utils;
 import com.t1project.club_card.dto.RegisterRequestDTO;
 import com.t1project.club_card.models.ClubMember;
@@ -37,6 +38,18 @@ public class ClubMemberService {
                 .build();
         System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);
+    }
+
+    public Mono<ClubMember> changeAllFields(String username, ChangeAllUserFieldsDTO fields) {
+        return clubMemberRepository.findMemberByUsername(username)
+                .flatMap(clubMember -> {
+                    clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(fields.getNewPassword()));
+                    clubMember.setFirstName(fields.getNewFirstName());
+                    clubMember.setLastName(fields.getNewLastName());
+                    clubMember.setEmail(fields.getNewEmail());
+                    clubMember.setPhoneNumber(fields.getNewPhone());
+                    return clubMemberRepository.save(clubMember);
+                });
     }
 
     public Mono<ClubMember> changeEmail(String username, String newEmail) {

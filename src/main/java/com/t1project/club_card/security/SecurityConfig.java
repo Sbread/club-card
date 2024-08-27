@@ -23,10 +23,11 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable).authorizeExchange(
                         exchange -> exchange.pathMatchers("/",
-                                        "/api",
+                                        "/api/**",
                                         "/login",
                                         "/register",
-                                        "/refreshToken")
+                                        "/refreshToken",
+                                        "/webjars/swagger-ui/index.html")
                                 .permitAll()
                                 .anyExchange()
                                 .authenticated())

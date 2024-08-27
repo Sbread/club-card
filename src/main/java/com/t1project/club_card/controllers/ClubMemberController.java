@@ -1,5 +1,6 @@
 package com.t1project.club_card.controllers;
 
+import com.t1project.club_card.dto.ChangeAllUserFieldsDTO;
 import com.t1project.club_card.dto.ChangeFieldDTO;
 import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.models.ClubMember;
@@ -26,6 +27,16 @@ public class ClubMemberController {
     @GetMapping("")
     public Mono<ClubMember> getCurrentClubMember(@AuthenticationPrincipal ClubMember clubMember) {
         return clubMemberService.findClubMemberByUsername(clubMember.getUsername());
+    }
+
+    @PutMapping("/update-fields")
+    public Mono<ResponseEntity<String>> updateAllFields(@RequestBody ChangeAllUserFieldsDTO changeAllUserFieldsDTO,
+                                            @AuthenticationPrincipal ClubMember clubMember) {
+        return clubMemberService.changeAllFields(clubMember.getUsername(), changeAllUserFieldsDTO)
+                .map(saved -> ResponseEntity.status(HttpStatus.OK).body("Update successfully"))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("fields update failed\n" + e.getMessage())));
+
     }
 
     @GetMapping("/qr")
