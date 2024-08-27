@@ -24,19 +24,21 @@ public class ClubMemberController {
     private QRCodeService qrCodeService;
 
     @GetMapping("")
-    public ClubMember getCurrentClubMember(@AuthenticationPrincipal ClubMember clubMember) {
-        return clubMember;
+    public Mono<ClubMember> getCurrentClubMember(@AuthenticationPrincipal ClubMember clubMember) {
+        return clubMemberService.findClubMemberByUsername(clubMember.getUsername());
     }
 
     @GetMapping("/qr")
     public Mono<ResponseEntity<byte[]>> getQR(@AuthenticationPrincipal ClubMember clubMember) {
-        return qrCodeService.generateQRCodeForClubMember(clubMember, 200, 200)
-                .map(qrCode -> {
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.IMAGE_PNG);
-                    headers.setContentLength(qrCode.length);
-                    return new ResponseEntity<>(qrCode, headers, HttpStatus.OK);
-                }).onErrorResume(e -> Mono.just(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)));
+        return clubMemberService.findClubMemberByUsername(clubMember.getUsername()).flatMap(
+                member -> qrCodeService.generateQRCodeForClubMember(member, 200, 200)
+                        .map(qrCode -> {
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.setContentType(MediaType.IMAGE_PNG);
+                            headers.setContentLength(qrCode.length);
+                            return new ResponseEntity<>(qrCode, headers, HttpStatus.OK);
+                        }).onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(("QR generate failed\n" + e.getMessage()).getBytes()))));
     }
 
     @PostMapping("/change-email")

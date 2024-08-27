@@ -9,19 +9,20 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 @Service
 public class QRCodeService {
 
     public Mono<byte[]> generateQRCodeForClubMember(ClubMember clubMember, int width, int height) {
         return Mono.fromCallable(() -> {
+            System.out.println(clubMember.toString());
             final String textToEncode = String.format(
-                    "Username: %s\nEmail: %s\nphone: %s\nIsLocked: %b\nRoles: %s\nPrivilege: %s",
+                    "Username: %s\nEmail: %s\nIsLocked: %b\nRoles: %s\nPrivilege: %s",
                     clubMember.getUsername(),
                     clubMember.getEmail(),
-                    clubMember.getPhoneNumber(),
                     clubMember.isLocked(),
-                    String.join(", ", clubMember.getRoles()),
+                    clubMember.getRoles().stream().findFirst().orElse(null),
                     clubMember.getPrivilege()
             );
             final QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -29,6 +30,6 @@ public class QRCodeService {
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", byteArrayOutputStream);
             return byteArrayOutputStream.toByteArray();
-        }).onErrorResume(e -> Mono.error(new RuntimeException("Error generating qr")));
+        }).onErrorResume(e -> Mono.error(new RuntimeException("Error generating qr\n" + Arrays.toString(e.getStackTrace()))));
     }
 }

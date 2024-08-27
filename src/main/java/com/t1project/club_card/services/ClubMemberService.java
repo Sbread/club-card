@@ -17,6 +17,9 @@ public class ClubMemberService {
     @Autowired
     private ClubMemberRepository clubMemberRepository;
 
+    public Mono<ClubMember> findClubMemberByUsername(String username) {
+        return clubMemberRepository.findMemberByUsername(username);
+    }
 
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
         final Set<String> roles = new HashSet<>();
