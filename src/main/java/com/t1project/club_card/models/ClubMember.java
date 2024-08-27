@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Table("ClubMembers")
@@ -18,22 +19,22 @@ import java.util.Set;
 public class ClubMember {
     @Id
     private Integer id;
-    @Column("username")
-    private String username;
+    @Column("email")
+    private String email;
     @Column("password")
     private String password;
     @Column("firstName")
     private String firstName;
     @Column("lastName")
     private String lastName;
-    @Column("email")
-    private String email;
     @Column("phoneNumber")
     private String phoneNumber;
+    @Column("birthday")
+    private LocalDate birthday;
     @Column("privilege")
     private String privilege;
     @Column("isLocked")
     private boolean isLocked;
     @Column("role")
-    private Set<String> roles;
+    private String role;
 }

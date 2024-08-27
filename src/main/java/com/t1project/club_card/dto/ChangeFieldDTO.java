@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ChangeFieldDTO {
-    private String newFieldValue;
+    private String value;
 }

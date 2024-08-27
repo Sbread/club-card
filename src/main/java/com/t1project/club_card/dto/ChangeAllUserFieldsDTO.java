@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,6 +15,6 @@ public class ChangeAllUserFieldsDTO {
     private String newPassword;
     private String newFirstName;
     private String newLastName;
-    private String newEmail;
     private String newPhone;
+    private LocalDate newBirthday;
 }

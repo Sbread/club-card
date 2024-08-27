@@ -32,10 +32,7 @@ public class DbConxInit {
     @Bean
     public CommandLineRunner init(ClubMemberRepository clubMemberRepository) {
         return args -> {
-            final Set<String> roles = new HashSet<>();
-            roles.add("ROLE_SUPERUSER");
             ClubMember superuser = ClubMember.builder()
-                    .username("superuser")
                     .password(Utils.bCryptPasswordEncoder.encode("supPas2608"))
                     .email("superuser@yandex.ru")
                     .firstName("sup")
@@ -43,10 +40,10 @@ public class DbConxInit {
                     .phoneNumber(null)
                     .privilege("VIP")
                     .isLocked(false)
-                    .roles(roles)
+                    .role("ROLE_SUPERUSER")
                     .build();
             clubMemberRepository.save(superuser)
-                    .onErrorResume(e -> clubMemberRepository.findMemberByUsername("superuser"))
+                    .onErrorResume(e -> clubMemberRepository.findByEmail("superuser@yandex.ru"))
                     .thenMany(clubMemberRepository.findAll())
                     .subscribe(System.out::println);
         };

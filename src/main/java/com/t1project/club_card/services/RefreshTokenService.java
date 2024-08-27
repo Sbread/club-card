@@ -23,7 +23,7 @@ public class RefreshTokenService {
     ClubMemberRepository clubMemberRepository;
 
     public Mono<RefreshToken> createRefreshToken(String username) {
-        return clubMemberRepository.findMemberByUsername(username).flatMap(
+        return clubMemberRepository.findByEmail(username).flatMap(
                 clubMember -> {
                     RefreshToken refreshToken = RefreshToken.builder()
                             .clubMemberId(clubMember.getId())

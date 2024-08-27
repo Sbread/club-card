@@ -18,11 +18,10 @@ public class QRCodeService {
         return Mono.fromCallable(() -> {
             System.out.println(clubMember.toString());
             final String textToEncode = String.format(
-                    "Username: %s\nEmail: %s\nIsLocked: %b\nRoles: %s\nPrivilege: %s",
-                    clubMember.getUsername(),
+                    "Email: %s\nIsLocked: %b\nRoles: %s\nPrivilege: %s",
                     clubMember.getEmail(),
                     clubMember.isLocked(),
-                    clubMember.getRoles().stream().findFirst().orElse(null),
+                    clubMember.getRole(),
                     clubMember.getPrivilege()
             );
             final QRCodeWriter qrCodeWriter = new QRCodeWriter();

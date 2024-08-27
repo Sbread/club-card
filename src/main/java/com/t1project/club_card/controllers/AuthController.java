@@ -4,6 +4,7 @@ import com.t1project.club_card.dto.AuthRequestDTO;
 import com.t1project.club_card.dto.JwtResponseDTO;
 import com.t1project.club_card.dto.RefreshTokenRequestDTO;
 import com.t1project.club_card.dto.RegisterRequestDTO;
+import com.t1project.club_card.models.RefreshToken;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.services.BlacklistTokenService;
 import com.t1project.club_card.services.ClubMemberService;
@@ -44,13 +45,20 @@ public class AuthController {
     @PostMapping("/login")
     public Mono<JwtResponseDTO> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
         Authentication authenticationToken
-                = new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword());
+                = new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword());
         return customReactiveAuthenticationManager.authenticate(authenticationToken)
-                .flatMap(authentication -> refreshTokenService.createRefreshToken(authRequestDTO.getUsername())
-                        .map(refreshToken -> JwtResponseDTO.builder()
-                                .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
-                                .token(refreshToken.getToken())
-                                .build()))
+                .flatMap(authentication ->
+                        Mono.zip(jwtService.GenerateToken(authRequestDTO.getEmail()),
+                                        refreshTokenService.createRefreshToken(authRequestDTO.getEmail()))
+                                .map(tuple -> {
+                                    String accessToken = tuple.getT1();
+                                    RefreshToken refreshToken = tuple.getT2();
+                                    return JwtResponseDTO.builder()
+                                            .accessToken(accessToken)
+                                            .token(refreshToken.getToken())
+                                            .build();
+                                })
+                )
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("Invalid user credentials")))
                 .onErrorResume(e -> Mono.error(new RuntimeException("Authentication failed", e)));
     }
@@ -60,7 +68,7 @@ public class AuthController {
         return refreshTokenService.findByToken(refreshTokenRequestDTO.getToken())
                 .map(refreshTokenService::verifyExpiration)
                 .flatMap(refreshToken -> clubMemberRepository.findById(refreshToken.getClubMemberId()))
-                .map(clubMember -> jwtService.GenerateToken(clubMember.getUsername()))
+                .flatMap(clubMember -> jwtService.GenerateToken(clubMember.getEmail()))
                 .map(accessToken -> JwtResponseDTO.builder()
                         .accessToken(accessToken)
                         .token(refreshTokenRequestDTO.getToken())

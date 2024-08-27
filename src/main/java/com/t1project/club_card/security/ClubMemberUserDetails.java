@@ -17,13 +17,11 @@ public class ClubMemberUserDetails extends ClubMember implements UserDetails {
     Collection<? extends GrantedAuthority> authorities;
 
     public ClubMemberUserDetails(ClubMember clubMember) {
-        this.username = clubMember.getUsername();
+        this.username = clubMember.getEmail();
         this.password = clubMember.getPassword();
         this.isLocked = clubMember.isLocked();
         List<GrantedAuthority> auth = new ArrayList<>();
-        for (String clubMemberRole : clubMember.getRoles()) {
-            auth.add(new SimpleGrantedAuthority(clubMemberRole));
-        }
+        auth.add(new SimpleGrantedAuthority(clubMember.getRole()));
         this.authorities = auth;
     }
 

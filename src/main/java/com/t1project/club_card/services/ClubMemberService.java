@@ -6,11 +6,10 @@ import com.t1project.club_card.dto.RegisterRequestDTO;
 import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Service
 public class ClubMemberService {
@@ -18,60 +17,49 @@ public class ClubMemberService {
     @Autowired
     private ClubMemberRepository clubMemberRepository;
 
-    public Mono<ClubMember> findClubMemberByUsername(String username) {
-        return clubMemberRepository.findMemberByUsername(username);
+    public Mono<ClubMember> findById(Integer id) {
+        return clubMemberRepository.findById(id);
+    }
+
+    public Mono<ClubMember> findByEmail(String email) {
+        return clubMemberRepository.findByEmail(email);
+    }
+
+    public Flux<ClubMember> findAll() {
+        return clubMemberRepository.findAll();
+    }
+
+    public Flux<ClubMember> findAllPaged(int page, int size) {
+        return clubMemberRepository.findAllPaged(PageRequest.of(page, size));
+    }
+
+    public Mono<ClubMember> save(ClubMember clubMember) {
+        return clubMemberRepository.save(clubMember);
     }
 
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
-        final Set<String> roles = new HashSet<>();
-        roles.add("ROLE_USER");
         final ClubMember clubMember = ClubMember.builder()
-                .username(registerRequestDTO.getUsername())
-                .password(Utils.bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()))
-                .firstName(null)
-                .lastName(null)
                 .email(registerRequestDTO.getEmail())
-                .phoneNumber(null)
+                .password(Utils.bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()))
+                .firstName(registerRequestDTO.getFirstName())
+                .lastName(registerRequestDTO.getLastName())
+                .phoneNumber(registerRequestDTO.getPhone())
                 .privilege("STANDARD")
                 .isLocked(false)
-                .roles(roles)
+                .role("ROLE_USER")
                 .build();
         System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);
     }
 
-    public Mono<ClubMember> changeAllFields(String username, ChangeAllUserFieldsDTO fields) {
-        return clubMemberRepository.findMemberByUsername(username)
+    public Mono<ClubMember> changeAllFields(Integer id, ChangeAllUserFieldsDTO fields) {
+        return clubMemberRepository.findById(id)
                 .flatMap(clubMember -> {
                     clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(fields.getNewPassword()));
                     clubMember.setFirstName(fields.getNewFirstName());
                     clubMember.setLastName(fields.getNewLastName());
-                    clubMember.setEmail(fields.getNewEmail());
                     clubMember.setPhoneNumber(fields.getNewPhone());
-                    return clubMemberRepository.save(clubMember);
-                });
-    }
-
-    public Mono<ClubMember> changeEmail(String username, String newEmail) {
-        return clubMemberRepository.findMemberByUsername(username)
-                .flatMap(clubMember -> {
-                    clubMember.setEmail(newEmail);
-                    return clubMemberRepository.save(clubMember);
-                });
-    }
-
-    public Mono<ClubMember> changePhoneNumber(String username, String newPhoneNumber) {
-        return clubMemberRepository.findMemberByUsername(username)
-                .flatMap(clubMember -> {
-                    clubMember.setPhoneNumber(newPhoneNumber);
-                    return clubMemberRepository.save(clubMember);
-                });
-    }
-
-    public Mono<ClubMember> changePassword(String username, String newPassword) {
-        return clubMemberRepository.findMemberByUsername(username)
-                .flatMap(clubMember -> {
-                    clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(newPassword));
+                    clubMember.setBirthday(fields.getNewBirthday());
                     return clubMemberRepository.save(clubMember);
                 });
     }

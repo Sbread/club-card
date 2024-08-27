@@ -21,7 +21,7 @@ public class ClubMemberUserDetailsService implements ReactiveUserDetailsService 
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return clubMemberRepository.findMemberByUsername(username)
+        return clubMemberRepository.findByEmail(username)
                 .switchIfEmpty(Mono.defer(
                         () -> {
                             logger.error("Username: {} not found", username);
