@@ -33,11 +33,12 @@ public class DbConxInit {
     public CommandLineRunner init(ClubMemberRepository clubMemberRepository) {
         return args -> {
             ClubMember superuser = ClubMember.builder()
-                    .password(Utils.bCryptPasswordEncoder.encode("supPas2608"))
                     .email("superuser@yandex.ru")
+                    .password(Utils.bCryptPasswordEncoder.encode("supPas2608"))
+                    .phoneNumber("+7999999999")
                     .firstName("sup")
                     .lastName("sup")
-                    .phoneNumber(null)
+                    .birthday(null)
                     .privilege("VIP")
                     .isLocked(false)
                     .role("ROLE_SUPERUSER")

@@ -5,10 +5,10 @@ CREATE TABLE IF NOT EXISTS ClubMembers (
     firstName VARCHAR(255) NOT NULL,
     lastName VARCHAR(255) NOT NULL,
     birthday date,
-    phoneNumber VARCHAR(20),
+    phone VARCHAR(20),
     privilege VARCHAR(20),
     isLocked boolean NOT NULL,
-    role TEXT[]
+    role VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS RefreshTokens (

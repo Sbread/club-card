@@ -27,7 +27,7 @@ public class ClubMember {
     private String firstName;
     @Column("lastName")
     private String lastName;
-    @Column("phoneNumber")
+    @Column("phone")
     private String phoneNumber;
     @Column("birthday")
     private LocalDate birthday;

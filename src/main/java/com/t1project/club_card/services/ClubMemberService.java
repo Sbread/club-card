@@ -44,6 +44,7 @@ public class ClubMemberService {
                 .firstName(registerRequestDTO.getFirstName())
                 .lastName(registerRequestDTO.getLastName())
                 .phoneNumber(registerRequestDTO.getPhone())
+                .birthday(null)
                 .privilege("STANDARD")
                 .isLocked(false)
                 .role("ROLE_USER")
