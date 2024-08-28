@@ -1,5 +1,6 @@
 package com.t1project.club_card.services;
 
+import com.t1project.club_card.exceptions.RefreshTokenExpiredException;
 import com.t1project.club_card.models.RefreshToken;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.repositories.RefreshTokenRepository;
@@ -42,7 +43,7 @@ public class RefreshTokenService {
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
-            throw new RuntimeException(token.getToken() + " Refresh token is expired. Please make a new login..!");
+            throw new RefreshTokenExpiredException("Refresh token is expired. Please make a new login..!");
         }
         return token;
     }

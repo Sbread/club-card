@@ -30,7 +30,7 @@ public class ClubMemberService {
     }
 
     public Flux<ClubMember> findAllPaged(int page, int size) {
-        return clubMemberRepository.findAllPaged(PageRequest.of(page, size));
+        return clubMemberRepository.findAllBy(PageRequest.of(page, size));
     }
 
     public Mono<ClubMember> save(ClubMember clubMember) {

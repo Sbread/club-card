@@ -41,7 +41,7 @@ public class SecurityConfig {
                                 .anyExchange()
                                 .authenticated())
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-                .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .authenticationManager(customReactiveAuthenticationManager)
                 .build();
     }

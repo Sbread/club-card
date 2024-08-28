@@ -19,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping
 @CrossOrigin
@@ -40,12 +42,22 @@ public class ClubMemberController {
         final String email = jwtService.extractUsername(token);
         return clubMemberService.findByEmail(email)
                 .map(Utils::mapToResponseDTO)
-                .map(dto -> ResponseEntity.status(HttpStatus.OK).body(dto))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+                .map(dto -> {
+                    if (dto != null) {
+                        return ResponseEntity.status(HttpStatus.OK).body(dto);
+                    } else {
+                        System.out.println("DTO IS NULL!!!!!!!!!!!!!!!!!!");
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(dto);
+                    }
+                })
+                .onErrorResume(e -> {
+                            System.out.println("GETS HERE");
+                            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                        });
     }
 
     @GetMapping("/members")
-    public Flux<ResponseClubMemberDTO> getAllMembers(
+    public Mono<ResponseEntity<List<ResponseClubMemberDTO>>> getAllMembers(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -54,9 +66,11 @@ public class ClubMemberController {
         if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPERUSER")) {
             return clubMemberService.findAllPaged(page, size)
                     .map(Utils::mapToResponseDTO)
-                    .onErrorResume(e -> Flux.error(new RuntimeException(e)));
+                    .collectList()
+                    .map(ResponseEntity::ok)
+                    .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
         }
-        return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "ROLE_USER unable to do this op"));
+        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
 
     @GetMapping("/members/{id}")

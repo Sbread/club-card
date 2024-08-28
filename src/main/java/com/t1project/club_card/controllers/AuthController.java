@@ -1,9 +1,6 @@
 package com.t1project.club_card.controllers;
 
-import com.t1project.club_card.dto.AuthRequestDTO;
-import com.t1project.club_card.dto.JwtResponseDTO;
-import com.t1project.club_card.dto.RefreshTokenRequestDTO;
-import com.t1project.club_card.dto.RegisterRequestDTO;
+import com.t1project.club_card.dto.*;
 import com.t1project.club_card.models.RefreshToken;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.services.BlacklistTokenService;
@@ -81,11 +78,12 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public Mono<ResponseEntity<String>> registerClubMember(@RequestBody RegisterRequestDTO clubMember) {
+    public Mono<ResponseEntity<ResponseClubMemberDTO>> registerClubMember(@RequestBody RegisterRequestDTO clubMember) {
         return clubMemberService.registerClubMember(clubMember)
-                .map(saved -> ResponseEntity.status(HttpStatus.CREATED).body("Registered successfully"))
+                .map(Utils::mapToResponseDTO)
+                .map(dto -> ResponseEntity.status(HttpStatus.CREATED).body(dto))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Registration failed\n" + e.getMessage())));
+                        .body(ResponseClubMemberDTO.builder().build())));
     }
 
     @GetMapping("/logout")

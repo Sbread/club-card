@@ -1,5 +1,6 @@
 package com.t1project.club_card.security;
 
+import com.t1project.club_card.exceptions.JwtTokenExpiredException;
 import com.t1project.club_card.repositories.BlacklistTokenRepository;
 import com.t1project.club_card.services.BlacklistTokenService;
 import com.t1project.club_card.services.ClubMemberUserDetailsService;
@@ -53,7 +54,7 @@ public class JwtAuthFilter implements WebFilter {
                                             return chain.filter(exchange).contextWrite(
                                                     ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
                                         } else {
-                                            return chain.filter(exchange);
+                                            throw new JwtTokenExpiredException("Jwt access token expired");
                                         }
                                     })
                                     .switchIfEmpty(chain.filter(exchange));
