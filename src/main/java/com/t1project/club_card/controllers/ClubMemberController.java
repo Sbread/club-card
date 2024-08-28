@@ -136,7 +136,7 @@ public class ClubMemberController {
 
     }
 
-    @GetMapping("/qr")
+    @GetMapping("profile/qr")
     public Mono<ResponseEntity<byte[]>> getQR(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
         final String token = Utils.extractBearerToken(authHeader);
         final String email = jwtService.extractUsername(token);
