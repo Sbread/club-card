@@ -25,7 +25,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
                                                          CorsConfigurationProperties corsConfigurationProperties) {
         return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                //.csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(configure -> {
                     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                     corsConfigurationProperties.getConfigurations().forEach(source::registerCorsConfiguration);
