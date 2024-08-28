@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping
+@CrossOrigin
 public class ClubMemberController {
 
     @Autowired

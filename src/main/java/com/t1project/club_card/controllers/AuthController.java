@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
+@CrossOrigin
 public class AuthController {
 
     @Autowired
@@ -44,8 +45,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public Mono<JwtResponseDTO> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
+        System.out.println(authRequestDTO.getEmail());
         Authentication authenticationToken
                 = new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword());
+        System.out.println(authRequestDTO.getEmail());
         return customReactiveAuthenticationManager.authenticate(authenticationToken)
                 .flatMap(authentication ->
                         Mono.zip(jwtService.GenerateToken(authRequestDTO.getEmail()),
