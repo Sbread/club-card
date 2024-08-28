@@ -19,11 +19,14 @@ public final class Utils {
 
     public static ResponseClubMemberDTO mapToResponseDTO(ClubMember member) {
         return ResponseClubMemberDTO.builder()
+                .id(member.getId())
                 .email(member.getEmail())
                 .firstName(member.getFirstName())
                 .lastName(member.getLastName())
                 .phone(member.getPhoneNumber())
                 .birthDay(member.getBirthday())
+                .role(member.getRole())
+                .privilege(member.getPrivilege())
                 .locked(member.isLocked())
                 .build();
     }

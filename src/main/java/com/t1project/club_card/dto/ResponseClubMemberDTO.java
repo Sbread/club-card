@@ -18,5 +18,7 @@ public class ResponseClubMemberDTO {
     private String lastName;
     private String phone;
     private LocalDate birthDay;
+    private String role;
+    private String privilege;
     private boolean locked;
 }

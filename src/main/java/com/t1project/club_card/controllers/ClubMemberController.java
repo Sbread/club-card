@@ -48,7 +48,7 @@ public class ClubMemberController {
     }
 
     @GetMapping("/members")
-    public Flux<ResponseEntity<ResponseClubMemberDTO>> getAllMembers(
+    public Flux<ResponseClubMemberDTO> getAllMembers(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -57,8 +57,7 @@ public class ClubMemberController {
         if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPERUSER")) {
             return clubMemberService.findAllPaged(page, size)
                     .map(Utils::mapToResponseDTO)
-                    .map(responseClubMemberDTO -> ResponseEntity.status(HttpStatus.OK).body(responseClubMemberDTO))
-                    .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+                    .onErrorResume(e -> Flux.error(new RuntimeException(e)));
         }
         return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "ROLE_USER unable to do this op"));
     }
