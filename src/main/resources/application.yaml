@@ -1,0 +1,16 @@
+spring:
+  cors:
+    url:
+      configurations:
+        "[/**]":
+          allowed-origins:
+            - http://localhost:8080
+          allowed-methods:
+            - GET
+            - POST
+            - PUT
+          allowed-headers:
+            - Authorization
+          allow-credentials: true
+          exposed-headers:
+          max-age: 10
