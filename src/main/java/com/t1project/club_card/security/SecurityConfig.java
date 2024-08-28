@@ -26,10 +26,10 @@ public class SecurityConfig {
                                                          CorsConfigurationProperties corsConfigurationProperties) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(configurer -> {
+                .cors(configure -> {
                     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                     corsConfigurationProperties.getConfigurations().forEach(source::registerCorsConfiguration);
-                    configurer.configurationSource(source);
+                    configure.configurationSource(source);
                 })
                 .authorizeExchange(
                         exchange -> exchange.pathMatchers("/",

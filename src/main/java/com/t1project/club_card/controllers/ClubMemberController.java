@@ -33,18 +33,14 @@ public class ClubMemberController {
     private QRCodeService qrCodeService;
 
     @GetMapping("/profile")
-    public Mono<ResponseEntity<ResponseClubMemberDTO>> getCurrentClubMember(@AuthenticationPrincipal ClubMember clubMember) {
-        return clubMemberService.findById(clubMember.getId())
-                .map(member -> {
-                    ResponseClubMemberDTO response = ResponseClubMemberDTO.builder()
-                            .email(member.getEmail())
-                            .firstName(member.getFirstName())
-                            .lastName(member.getLastName())
-                            .phone(member.getPhoneNumber())
-                            .birthDay(member.getBirthday())
-                            .locked(member.isLocked()).build();
-                    return ResponseEntity.status(HttpStatus.OK).body(response);
-                }).onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+    public Mono<ResponseEntity<ResponseClubMemberDTO>> getCurrentClubMember(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        final String token = Utils.extractBearerToken(authHeader);
+        final String email = jwtService.extractUsername(token);
+        return clubMemberService.findByEmail(email)
+                .map(Utils::mapToResponseDTO)
+                .map(dto -> ResponseEntity.status(HttpStatus.OK).body(dto))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
     @GetMapping("/members")
@@ -141,8 +137,10 @@ public class ClubMemberController {
     }
 
     @GetMapping("/qr")
-    public Mono<ResponseEntity<byte[]>> getQR(@AuthenticationPrincipal ClubMember clubMember) {
-        return clubMemberService.findById(clubMember.getId()).flatMap(
+    public Mono<ResponseEntity<byte[]>> getQR(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        final String token = Utils.extractBearerToken(authHeader);
+        final String email = jwtService.extractUsername(token);
+        return clubMemberService.findByEmail(email).flatMap(
                 member -> qrCodeService.generateQRCodeForClubMember(member, 200, 200)
                         .map(qrCode -> {
                             HttpHeaders headers = new HttpHeaders();
