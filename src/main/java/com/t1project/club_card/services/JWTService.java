@@ -24,6 +24,10 @@ public class JWTService {
     @Autowired
     private ClubMemberService clubMemberService;
 
+    public boolean extractLocked(String token) {
+        return extractClaim(token, claims -> claims.get("locked", Boolean.class));
+    }
+
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
@@ -54,6 +58,7 @@ public class JWTService {
     private Mono<String> createToken(Map<String, Object> claims, String email) {
         return clubMemberService.findByEmail(email).map(
                 clubMember -> {
+                    claims.put("locked", clubMember.isLocked());
                     claims.put("role", clubMember.getRole());
                     claims.put("privilege", clubMember.getPrivilege());
                     return Jwts.builder()

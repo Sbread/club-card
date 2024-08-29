@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @Service
 public class ClubMemberService {
 
@@ -62,11 +60,11 @@ public class ClubMemberService {
     public Mono<ClubMember> changeAllFields(Integer id, ChangeAllUserFieldsDTO fields) {
         return clubMemberRepository.findById(id)
                 .flatMap(clubMember -> {
-                    clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(fields.getNewPassword()));
-                    clubMember.setFirstName(fields.getNewFirstName());
-                    clubMember.setLastName(fields.getNewLastName());
-                    clubMember.setPhoneNumber(fields.getNewPhone());
-                    clubMember.setBirthday(fields.getNewBirthday());
+                    clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(fields.getPassword()));
+                    clubMember.setFirstName(fields.getFirstName());
+                    clubMember.setLastName(fields.getLastName());
+                    clubMember.setPhoneNumber(fields.getPhone());
+                    clubMember.setBirthday(fields.getBirthday());
                     return clubMemberRepository.save(clubMember);
                 });
     }

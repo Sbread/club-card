@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChangeUsernameIsLockedDTO {
-    private String username;
-    private boolean newIsLocked;
+public class LockedRequestDTO {
+    private boolean locked;
 }

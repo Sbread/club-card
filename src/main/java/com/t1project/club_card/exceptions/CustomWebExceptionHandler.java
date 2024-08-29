@@ -8,6 +8,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebExceptionHandler;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -45,6 +47,14 @@ public class CustomWebExceptionHandler implements WebExceptionHandler {
             case RefreshTokenExpiredException refreshTokenExpiredException -> {
                 status = HttpStatus.FORBIDDEN;
                 message = "Refresh token has expired";
+            }
+            case AccessDeniedException accessRightsException -> {
+                status = HttpStatus.FORBIDDEN;
+                message = accessRightsException.getMessage();
+            }
+            case UsernameNotFoundException usernameNotFoundException -> {
+                status = HttpStatus.FORBIDDEN;
+                message = usernameNotFoundException.getMessage();
             }
             default -> {
                 System.out.println("UNHANDLED EXCEPTION " + ex);

@@ -12,9 +12,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class ChangeAllUserFieldsDTO {
-    private String newPassword;
-    private String newFirstName;
-    private String newLastName;
-    private String newPhone;
-    private LocalDate newBirthday;
+    private String password;
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private LocalDate birthday;
 }
