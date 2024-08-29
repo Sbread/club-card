@@ -74,7 +74,8 @@ public class AuthController {
                         .accessToken(accessToken)
                         .token(refreshTokenRequestDTO.getToken())
                         .build())
-                .switchIfEmpty(Mono.error(new RefreshTokenExpiredException("Refresh token expired")));
+                .switchIfEmpty(Mono.error(new RefreshTokenExpiredException("Refresh token expired")))
+                .onErrorResume(e -> Mono.error(new RefreshTokenExpiredException("Refresh token expired")));
     }
 
 

@@ -35,16 +35,15 @@ public final class Utils {
                 .build();
     }
 
-    public static MembersPageDTO mapToPageResponseDTO(long total,
-                                                  long onPage,
-                                                  Iterable<ClubMember> members) {
+    public static MembersPageDTO mapToPageResponseDTO(Iterable<ClubMember> result,
+                                                      long total) {
         final List<ResponseClubMemberDTO> membersDTOs = StreamSupport
-                .stream(members.spliterator(), false)
+                .stream(result.spliterator(), false)
                 .map(Utils::mapToResponseDTO)
                 .toList();
         return MembersPageDTO.builder()
+                .result(membersDTOs)
                 .total(total)
-                .onPage(onPage)
-                .members(membersDTOs).build();
+                .build();
     }
 }

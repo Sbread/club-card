@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class MembersPageDTO {
+    private Iterable<ResponseClubMemberDTO> result;
     private long total;
-    private long onPage;
-    private Iterable<ResponseClubMemberDTO> members;
 }

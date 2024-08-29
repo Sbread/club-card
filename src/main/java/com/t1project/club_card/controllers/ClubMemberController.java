@@ -60,13 +60,9 @@ public class ClubMemberController {
         if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPERUSER")) {
             Mono<Long> countAll = clubMemberService.countAll();
             Flux<ClubMember> membersOnPage = clubMemberService.findAllPaged(page, size);
-            Mono<Long> countOnPage = membersOnPage.count();
-            return countAll.zipWith(countOnPage).zipWith(membersOnPage.collectList())
-                    .map(tuple3 -> {
-                        long total = tuple3.getT1().getT1();
-                        long onPage = tuple3.getT1().getT2();
-                        return Utils.mapToPageResponseDTO(total, onPage, tuple3.getT2());
-                    }).map(ResponseEntity::ok)
+            return membersOnPage.collectList().zipWith(countAll)
+                    .map(tuple -> Utils.mapToPageResponseDTO(tuple.getT1(), tuple.getT2()))
+                    .map(ResponseEntity::ok)
                     .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
         }
         return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
