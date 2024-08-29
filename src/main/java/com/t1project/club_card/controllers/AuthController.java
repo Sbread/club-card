@@ -13,11 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -43,7 +45,8 @@ public class AuthController {
     private RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
-    public Mono<ServerResponse> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
+    public Mono<ResponseEntity<JwtResponseDTO>> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO,
+                                                                        ServerWebExchange exchange) {
         System.out.println(authRequestDTO.getEmail());
         Authentication authenticationToken
                 = new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword());
@@ -55,10 +58,9 @@ public class AuthController {
                                 .flatMap(tuple -> {
                                     JwtResponseDTO dto = Utils.mapToJwtResponse(tuple.getT1());
                                     ResponseCookie refreshCookie
-                                            = makeCookie("refreshCookie", tuple.getT2().getToken());
-                                    return ServerResponse.ok()
-                                            .cookie(refreshCookie)
-                                            .bodyValue(dto);
+                                            = makeCookie("refreshToken", tuple.getT2().getToken());
+                                    exchange.getResponse().addCookie(refreshCookie);
+                                    return Mono.just(ResponseEntity.ok().body(dto));
                                 })
                 )
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("Invalid user credentials")))
@@ -66,10 +68,12 @@ public class AuthController {
     }
 
     @PostMapping("/refreshToken")
-    public Mono<ServerResponse> refreshToken(
-            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public Mono<ResponseEntity<JwtResponseDTO>> refreshToken(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken,
+            ServerWebExchange exchange) {
+        System.out.println(refreshToken);
         if (refreshToken == null || refreshToken.isEmpty()) {
-            return Mono.error(new RuntimeException("Missing refreshToken"));
+            return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
         }
         return refreshTokenService.findByToken(refreshToken)
                 .map(refreshTokenService::verifyExpiration)
@@ -80,9 +84,8 @@ public class AuthController {
                                             ResponseCookie refreshTokenCookie
                                                     = makeCookie("refreshToken", updatedToken);
                                             JwtResponseDTO jwtResponse = Utils.mapToJwtResponse(accessToken);
-                                            return ServerResponse.ok()
-                                                    .cookie(refreshTokenCookie)
-                                                    .bodyValue(jwtResponse);
+                                            exchange.getResponse().addCookie(refreshTokenCookie);
+                                            return Mono.just(ResponseEntity.ok().body(jwtResponse));
                                         }))))
                 .switchIfEmpty(Mono.error(new RefreshTokenExpiredException("Refresh token expired")))
                 .onErrorResume(e -> Mono.error(new RuntimeException("Smth went wrong")));
@@ -92,6 +95,7 @@ public class AuthController {
         return ResponseCookie.from(name, updatedToken)
                 .httpOnly(true)
                 .secure(true)
+                .sameSite("None")
                 .path("/")
                 .maxAge(24 * 60 * 60)
                 .build();
