@@ -12,9 +12,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Configuration
 public class DbConxInit {
     @Bean

@@ -2,7 +2,6 @@ package com.t1project.club_card.controllers;
 
 import com.t1project.club_card.dto.*;
 import com.t1project.club_card.exceptions.RefreshTokenExpiredException;
-import com.t1project.club_card.models.RefreshToken;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.services.BlacklistTokenService;
 import com.t1project.club_card.services.ClubMemberService;
@@ -12,11 +11,13 @@ import com.t1project.club_card.services.RefreshTokenService;
 import com.t1project.club_card.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -42,7 +43,7 @@ public class AuthController {
     private RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
-    public Mono<JwtResponseDTO> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
+    public Mono<ServerResponse> authenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
         System.out.println(authRequestDTO.getEmail());
         Authentication authenticationToken
                 = new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword());
@@ -51,13 +52,13 @@ public class AuthController {
                 .flatMap(authentication ->
                         Mono.zip(jwtService.GenerateToken(authRequestDTO.getEmail()),
                                         refreshTokenService.createRefreshToken(authRequestDTO.getEmail()))
-                                .map(tuple -> {
-                                    String accessToken = tuple.getT1();
-                                    RefreshToken refreshToken = tuple.getT2();
-                                    return JwtResponseDTO.builder()
-                                            .accessToken(accessToken)
-                                            .token(refreshToken.getToken())
-                                            .build();
+                                .flatMap(tuple -> {
+                                    JwtResponseDTO dto = Utils.mapToJwtResponse(tuple.getT1());
+                                    ResponseCookie refreshCookie
+                                            = makeCookie("refreshCookie", tuple.getT2().getToken());
+                                    return ServerResponse.ok()
+                                            .cookie(refreshCookie)
+                                            .bodyValue(dto);
                                 })
                 )
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("Invalid user credentials")))
@@ -65,17 +66,35 @@ public class AuthController {
     }
 
     @PostMapping("/refreshToken")
-    public Mono<JwtResponseDTO> refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
-        return refreshTokenService.findByToken(refreshTokenRequestDTO.getToken())
+    public Mono<ServerResponse> refreshToken(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return Mono.error(new RuntimeException("Missing refreshToken"));
+        }
+        return refreshTokenService.findByToken(refreshToken)
                 .map(refreshTokenService::verifyExpiration)
-                .flatMap(refreshToken -> clubMemberRepository.findById(refreshToken.getClubMemberId()))
-                .flatMap(clubMember -> jwtService.GenerateToken(clubMember.getEmail()))
-                .map(accessToken -> JwtResponseDTO.builder()
-                        .accessToken(accessToken)
-                        .token(refreshTokenRequestDTO.getToken())
-                        .build())
+                .flatMap(refreshTokenO -> clubMemberRepository.findById(refreshTokenO.getClubMemberId())
+                        .flatMap(clubMember -> jwtService.GenerateToken(clubMember.getEmail())
+                                .flatMap(accessToken -> refreshTokenService.updateToken(refreshTokenO)
+                                        .flatMap(updatedToken -> {
+                                            ResponseCookie refreshTokenCookie
+                                                    = makeCookie("refreshToken", updatedToken);
+                                            JwtResponseDTO jwtResponse = Utils.mapToJwtResponse(accessToken);
+                                            return ServerResponse.ok()
+                                                    .cookie(refreshTokenCookie)
+                                                    .bodyValue(jwtResponse);
+                                        }))))
                 .switchIfEmpty(Mono.error(new RefreshTokenExpiredException("Refresh token expired")))
-                .onErrorResume(e -> Mono.error(new RefreshTokenExpiredException("Refresh token expired")));
+                .onErrorResume(e -> Mono.error(new RuntimeException("Smth went wrong")));
+    }
+
+    private static ResponseCookie makeCookie(String name, String updatedToken) {
+        return ResponseCookie.from(name, updatedToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .build();
     }
 
 

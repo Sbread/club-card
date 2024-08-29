@@ -23,14 +23,29 @@ public class RefreshTokenService {
     @Autowired
     ClubMemberRepository clubMemberRepository;
 
+    private RefreshToken buildRefreshToken(int id) {
+        return RefreshToken.builder()
+                .clubMemberId(id)
+                .token(UUID.randomUUID().toString())
+                .expiryDate(Instant.now().plusMillis(MILLIS_LIVING_TIME))
+                .build();
+    }
+
+    private RefreshToken updToken(RefreshToken refreshToken) {
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiryDate(Instant.now().plusMillis(MILLIS_LIVING_TIME));
+        return refreshToken;
+    }
+
+    public Mono<String> updateToken(RefreshToken refreshToken) {
+        return refreshTokenRepository.save(updToken(refreshToken))
+                .map(RefreshToken::getToken);
+    }
+
     public Mono<RefreshToken> createRefreshToken(String username) {
         return clubMemberRepository.findByEmail(username).flatMap(
                 clubMember -> {
-                    RefreshToken refreshToken = RefreshToken.builder()
-                            .clubMemberId(clubMember.getId())
-                            .token(UUID.randomUUID().toString())
-                            .expiryDate(Instant.now().plusMillis(MILLIS_LIVING_TIME))
-                            .build();
+                    RefreshToken refreshToken = buildRefreshToken(clubMember.getId());
                     return refreshTokenRepository.save(refreshToken);
                 }
         );

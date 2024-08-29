@@ -1,16 +1,12 @@
 package com.t1project.club_card.security;
 
 import com.t1project.club_card.exceptions.InvalidAccessTokenException;
-import com.t1project.club_card.exceptions.JwtTokenException;
-import com.t1project.club_card.exceptions.JwtTokenExpiredException;
-import com.t1project.club_card.exceptions.RefreshTokenExpiredException;
 import com.t1project.club_card.services.BlacklistTokenService;
 import com.t1project.club_card.services.ClubMemberUserDetailsService;
 import com.t1project.club_card.services.JWTService;
 import com.t1project.club_card.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -45,7 +41,7 @@ public class JwtAuthFilter implements WebFilter {
                     .flatMap(username -> blacklistTokenRepositoryService.existsByToken(token)
                             .flatMap(isBlacklisted -> {
                                 if (isBlacklisted) {
-                                    return Mono.error(new InvalidAccessTokenException("Refresh token expired"));
+                                    return Mono.error(new InvalidAccessTokenException("Invalid access token"));
                                 } else {
                                     return clubMemberUserDetailsService.findByUsername(username)
                                             .flatMap(userDetails -> {

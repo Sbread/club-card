@@ -1,5 +1,6 @@
 package com.t1project.club_card.utils;
 
+import com.t1project.club_card.dto.JwtResponseDTO;
 import com.t1project.club_card.dto.MembersPageDTO;
 import com.t1project.club_card.dto.ResponseClubMemberDTO;
 import com.t1project.club_card.models.ClubMember;
@@ -19,6 +20,10 @@ public final class Utils {
             return null;
         }
         return authHeader.substring(7);
+    }
+
+    public static JwtResponseDTO mapToJwtResponse(String accessToken) {
+        return JwtResponseDTO.builder().accessToken(accessToken).build();
     }
 
     public static ResponseClubMemberDTO mapToResponseDTO(ClubMember member) {
