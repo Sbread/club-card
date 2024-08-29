@@ -42,18 +42,8 @@ public class JWTService {
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
-        System.out.println("HERE 3");
         return claimsResolver.apply(claims);
     }
-//
-//    public Boolean isTokenExpired(String token) {
-//        return extractExpiration(token).before(new Date());
-//    }
-
-//    public Boolean validateToken(String token, UserDetails userDetails) {
-//        final String username = extractUsername(token);
-//        return (username.equals(userDetails.getUsername()));
-//    }
 
     public Mono<String> GenerateToken(String email) {
         Map<String, Object> claims = new HashMap<>();

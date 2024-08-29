@@ -13,12 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -58,7 +56,7 @@ public class AuthController {
                                 .flatMap(tuple -> {
                                     JwtResponseDTO dto = Utils.mapToJwtResponse(tuple.getT1());
                                     ResponseCookie refreshCookie
-                                            = makeCookie("refreshToken", tuple.getT2().getToken());
+                                            = refreshTokenService.makeCookie("refreshToken", tuple.getT2().getToken());
                                     exchange.getResponse().addCookie(refreshCookie);
                                     return Mono.just(ResponseEntity.ok().body(dto));
                                 })
@@ -71,7 +69,6 @@ public class AuthController {
     public Mono<ResponseEntity<JwtResponseDTO>> refreshToken(
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
             ServerWebExchange exchange) {
-        System.out.println(refreshToken);
         if (refreshToken == null || refreshToken.isEmpty()) {
             return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
         }
@@ -82,23 +79,13 @@ public class AuthController {
                                 .flatMap(accessToken -> refreshTokenService.updateToken(refreshTokenO)
                                         .flatMap(updatedToken -> {
                                             ResponseCookie refreshTokenCookie
-                                                    = makeCookie("refreshToken", updatedToken);
+                                                    = refreshTokenService.makeCookie("refreshToken", updatedToken);
                                             JwtResponseDTO jwtResponse = Utils.mapToJwtResponse(accessToken);
                                             exchange.getResponse().addCookie(refreshTokenCookie);
                                             return Mono.just(ResponseEntity.ok().body(jwtResponse));
                                         }))))
                 .switchIfEmpty(Mono.error(new RefreshTokenExpiredException("Refresh token expired")))
                 .onErrorResume(e -> Mono.error(new RuntimeException("Smth went wrong")));
-    }
-
-    private static ResponseCookie makeCookie(String name, String updatedToken) {
-        return ResponseCookie.from(name, updatedToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .path("/")
-                .maxAge(24 * 60 * 60)
-                .build();
     }
 
 

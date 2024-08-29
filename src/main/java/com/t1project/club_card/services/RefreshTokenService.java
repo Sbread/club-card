@@ -5,6 +5,7 @@ import com.t1project.club_card.models.RefreshToken;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.repositories.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -40,6 +41,16 @@ public class RefreshTokenService {
     public Mono<String> updateToken(RefreshToken refreshToken) {
         return refreshTokenRepository.save(updToken(refreshToken))
                 .map(RefreshToken::getToken);
+    }
+
+    public ResponseCookie makeCookie(String name, String updatedToken) {
+        return ResponseCookie.from(name, updatedToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .build();
     }
 
     public Mono<RefreshToken> createRefreshToken(String username) {

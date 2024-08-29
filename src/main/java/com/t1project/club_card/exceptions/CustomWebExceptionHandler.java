@@ -27,8 +27,6 @@ public class CustomWebExceptionHandler implements WebExceptionHandler {
     @NonNull
     @Override
     public Mono<Void> handle(@NonNull ServerWebExchange exchange, @NonNull Throwable ex) {
-        System.out.println("I'm in handler");
-
         HttpStatus status;
         String message;
         switch (ex) {

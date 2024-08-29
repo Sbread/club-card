@@ -20,8 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
 @RequestMapping
 @CrossOrigin
@@ -44,10 +42,7 @@ public class ClubMemberController {
         return clubMemberService.findByEmail(email)
                 .map(Utils::mapToResponseDTO)
                 .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    System.out.println("GETS HERE");
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                });
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
     @GetMapping("/members")
