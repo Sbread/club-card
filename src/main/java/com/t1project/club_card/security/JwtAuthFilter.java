@@ -1,7 +1,9 @@
 package com.t1project.club_card.security;
 
+import com.t1project.club_card.exceptions.InvalidAccessTokenException;
+import com.t1project.club_card.exceptions.JwtTokenException;
 import com.t1project.club_card.exceptions.JwtTokenExpiredException;
-import com.t1project.club_card.repositories.BlacklistTokenRepository;
+import com.t1project.club_card.exceptions.RefreshTokenExpiredException;
 import com.t1project.club_card.services.BlacklistTokenService;
 import com.t1project.club_card.services.ClubMemberUserDetailsService;
 import com.t1project.club_card.services.JWTService;
@@ -32,34 +34,33 @@ public class JwtAuthFilter implements WebFilter {
     @Autowired
     private BlacklistTokenService blacklistTokenRepositoryService;
 
+    @NonNull
     @Override
-    public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
+    public Mono<Void> filter(ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         final String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         String token = Utils.extractBearerToken(authHeader);
-        String username = token == null ? null : jwtService.extractUsername(token);
-        if (username != null) {
-            return blacklistTokenRepositoryService.existsByToken(token)
-                    .flatMap(isBlacklisted -> {
-                        if (isBlacklisted) {
-                            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                            return exchange.getResponse().setComplete();
-                        } else {
-                            return clubMemberUserDetailsService.findByUsername(username)
-                                    .flatMap(userDetails -> {
-                                        if (jwtService.validateToken(token, userDetails)) {
-                                            UsernamePasswordAuthenticationToken authenticationToken
-                                                    = new UsernamePasswordAuthenticationToken(
-                                                    userDetails, null, userDetails.getAuthorities());
-                                            SecurityContext securityContext = new SecurityContextImpl(authenticationToken);
-                                            return chain.filter(exchange).contextWrite(
-                                                    ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
-                                        } else {
-                                            throw new JwtTokenExpiredException("Jwt access token expired");
-                                        }
-                                    })
-                                    .switchIfEmpty(chain.filter(exchange));
-                        }
-                    });
+        if (token != null) {
+            return Mono.just(token)
+                    .map(jwtService::extractUsername)
+                    .flatMap(username -> blacklistTokenRepositoryService.existsByToken(token)
+                            .flatMap(isBlacklisted -> {
+                                if (isBlacklisted) {
+                                    return Mono.error(new InvalidAccessTokenException("Refresh token expired"));
+                                } else {
+                                    return clubMemberUserDetailsService.findByUsername(username)
+                                            .flatMap(userDetails -> {
+                                                        UsernamePasswordAuthenticationToken authenticationToken
+                                                                = new UsernamePasswordAuthenticationToken(
+                                                                userDetails, null, userDetails.getAuthorities());
+                                                        SecurityContext securityContext = new SecurityContextImpl(authenticationToken);
+                                                        return chain.filter(exchange).contextWrite(
+                                                                ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
+                                                    }
+                                            )
+                                            .switchIfEmpty(chain.filter(exchange));
+                                }
+                            }))
+                    .onErrorResume(Mono::error);
         }
         return chain.filter(exchange);
     }

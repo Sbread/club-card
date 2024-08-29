@@ -2,6 +2,7 @@ package com.t1project.club_card.controllers;
 
 import com.t1project.club_card.dto.ChangeAllUserFieldsDTO;
 import com.t1project.club_card.dto.ChangeFieldDTO;
+import com.t1project.club_card.dto.MembersPageDTO;
 import com.t1project.club_card.dto.ResponseClubMemberDTO;
 import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.models.ClubMember;
@@ -42,33 +43,31 @@ public class ClubMemberController {
         final String email = jwtService.extractUsername(token);
         return clubMemberService.findByEmail(email)
                 .map(Utils::mapToResponseDTO)
-                .map(dto -> {
-                    if (dto != null) {
-                        return ResponseEntity.status(HttpStatus.OK).body(dto);
-                    } else {
-                        System.out.println("DTO IS NULL!!!!!!!!!!!!!!!!!!");
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(dto);
-                    }
-                })
+                .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
-                            System.out.println("GETS HERE");
-                            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                        });
+                    System.out.println("GETS HERE");
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                });
     }
 
     @GetMapping("/members")
-    public Mono<ResponseEntity<List<ResponseClubMemberDTO>>> getAllMembers(
+    public Mono<ResponseEntity<MembersPageDTO>> getAllMembers(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         final String token = Utils.extractBearerToken(authHeader);
         final String role = jwtService.extractRole(token);
         if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPERUSER")) {
-            return clubMemberService.findAllPaged(page, size)
-                    .map(Utils::mapToResponseDTO)
-                    .collectList()
-                    .map(ResponseEntity::ok)
-                    .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+            Mono<Long> countAll = clubMemberService.countAll();
+            Flux<ClubMember> membersOnPage = clubMemberService.findAllPaged(page, size);
+            Mono<Long> countOnPage = membersOnPage.count();
+            return countAll.zipWith(countOnPage).zipWith(membersOnPage.collectList())
+                    .map(tuple3 -> {
+                        long total = tuple3.getT1().getT1();
+                        long onPage = tuple3.getT1().getT2();
+                        return Utils.mapToPageResponseDTO(total, onPage, tuple3.getT2());
+                    }).map(ResponseEntity::ok)
+                    .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
         }
         return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
@@ -82,10 +81,11 @@ public class ClubMemberController {
         if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPERUSER")) {
             return clubMemberService.findById(id)
                     .map(Utils::mapToResponseDTO)
-                    .map(responseClubMemberDTO -> ResponseEntity.status(HttpStatus.OK).body(responseClubMemberDTO))
+                    .map(ResponseEntity::ok)
+                    .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()))
                     .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
         }
-        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "ROLE_USER unable to do this op"));
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
     @PutMapping("/members/{id}/change-role")
@@ -98,8 +98,9 @@ public class ClubMemberController {
         return clubMemberService.findById(id)
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
-                    if (!changeFieldDTO.getValue().equals("ROLE_SUPERUSER") &&
-                            (rl.equals("ROLE_USER") || (rl.equals("ROLE_ADMIN") && role.equals("ROLE_SUPERUSER")))) {
+                    if (!changeFieldDTO.getValue().equals("ROLE_SUPERUSER")
+                            && ((rl.equals("ROLE_USER") && role.equals("ROLE_USER"))
+                            || (rl.equals("ROLE_ADMIN") && role.equals("ROLE_SUPERUSER")))) {
                         clubMember.setRole(changeFieldDTO.getValue());
                         return clubMemberService.save(clubMember)
                                 .map(Utils::mapToResponseDTO)
@@ -124,7 +125,7 @@ public class ClubMemberController {
         return clubMemberService.findById(id)
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
-                    if (rl.equals("ROLE_USER") || (rl.equals("ROLE_ADMIN") && role.equals("ROLE_SUPERUSER"))) {
+                    if (!role.equals("ROLE_USER") && !rl.equals("ROLE_SUPERUSER")) {
                         clubMember.setPrivilege(changeFieldDTO.getValue());
                         return clubMemberService.save(clubMember)
                                 .map(Utils::mapToResponseDTO)

@@ -1,6 +1,7 @@
 package com.t1project.club_card.controllers;
 
 import com.t1project.club_card.dto.*;
+import com.t1project.club_card.exceptions.RefreshTokenExpiredException;
 import com.t1project.club_card.models.RefreshToken;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.services.BlacklistTokenService;
@@ -73,7 +74,7 @@ public class AuthController {
                         .accessToken(accessToken)
                         .token(refreshTokenRequestDTO.getToken())
                         .build())
-                .switchIfEmpty(Mono.error(new RuntimeException("Cannot find Refresh Token in DB")));
+                .switchIfEmpty(Mono.error(new RefreshTokenExpiredException("Refresh token expired")));
     }
 
 

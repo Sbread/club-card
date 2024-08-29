@@ -1,9 +1,10 @@
 package com.t1project.club_card.services;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.t1project.club_card.exceptions.*;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -39,23 +40,20 @@ public class JWTService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
+        System.out.println("HERE 3");
         return claimsResolver.apply(claims);
     }
+//
+//    public Boolean isTokenExpired(String token) {
+//        return extractExpiration(token).before(new Date());
+//    }
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
+//    public Boolean validateToken(String token, UserDetails userDetails) {
+//        final String username = extractUsername(token);
+//        return (username.equals(userDetails.getUsername()));
+//    }
 
     public Mono<String> GenerateToken(String email) {
         Map<String, Object> claims = new HashMap<>();

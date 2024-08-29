@@ -3,6 +3,7 @@ package com.t1project.club_card.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -17,7 +18,17 @@ import java.util.List;
 
 @Configuration
 @EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
 public class SecurityConfig {
+
+    private static final String[] AUTH_WHITELIST = {
+            "/api/**",
+            "/swagger-resources/**",
+            "/configuration/ui",
+            "/configuration/security",
+            "/swagger-ui.html",
+            "/webjars/**",
+            "/v3/api-docs/**"};
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
@@ -30,18 +41,18 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(it -> it.configurationSource(that -> corsConfigurationSource().getCorsConfiguration(that)))
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(
-                        exchange -> exchange.pathMatchers("/",
-                                        "/api/**",
+                        exchange -> exchange
+                                .pathMatchers(AUTH_WHITELIST).permitAll()
+                                .pathMatchers("/",
                                         "/login",
                                         "/register",
-                                        "/refreshToken",
-                                        "/webjars/**")
+                                        "/refreshToken")
                                 .permitAll()
                                 .anyExchange()
                                 .authenticated())
-                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-                .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .authenticationManager(customReactiveAuthenticationManager)
                 .build();
     }

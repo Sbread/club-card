@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 public class ClubMemberService {
 
@@ -31,6 +33,10 @@ public class ClubMemberService {
 
     public Flux<ClubMember> findAllPaged(int page, int size) {
         return clubMemberRepository.findAllBy(PageRequest.of(page, size));
+    }
+
+    public Mono<Long> countAll() {
+        return clubMemberRepository.count();
     }
 
     public Mono<ClubMember> save(ClubMember clubMember) {
