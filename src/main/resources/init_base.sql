@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS BlacklistTokens (
     token VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS RoleCardsTemplates (
+CREATE TABLE IF NOT EXISTS TemplatesPrivileges (
     id serial PRIMARY KEY,
-    role VARCHAR(20) NOT NULL UNIQUE,
-    templates TEXT[]
+    template VARCHAR(255) NOT NULL UNIQUE,
+    privilege TEXT[]
 );

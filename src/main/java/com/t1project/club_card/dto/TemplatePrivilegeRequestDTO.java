@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RoleTemplatesResponseDTO {
-    private String role;
-    private Set<String> templates;
+public class TemplatePrivilegeRequestDTO {
+    private String template;
+    private String privilege;
 }

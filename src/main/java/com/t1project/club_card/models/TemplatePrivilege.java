@@ -15,11 +15,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RoleCardTemplate {
+public class TemplatePrivilege {
     @Id
     private Integer id;
-    @Column("role")
-    private String role;
-    @Column("templates")
-    private Set<String> templates;
+    @Column("template")
+    private String template;
+    @Column("privilege")
+    private Set<String> privileges;
 }

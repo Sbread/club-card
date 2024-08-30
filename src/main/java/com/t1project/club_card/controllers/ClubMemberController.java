@@ -6,9 +6,10 @@ import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.services.JWTService;
 import com.t1project.club_card.services.QRCodeService;
-import com.t1project.club_card.services.RoleCardTemplateService;
+import com.t1project.club_card.services.TemplatePrivilegeService;
 import com.t1project.club_card.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,10 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -37,7 +40,7 @@ public class ClubMemberController {
     private QRCodeService qrCodeService;
 
     @Autowired
-    private RoleCardTemplateService roleCardTemplateService;
+    private TemplatePrivilegeService templatePrivilegeService;
 
     @GetMapping("/profile")
     public Mono<ResponseEntity<ResponseClubMemberDTO>> getCurrentClubMember(
@@ -210,10 +213,10 @@ public class ClubMemberController {
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("member not found")));
     }
 
-    @PutMapping("/roles-templates")
-    public Mono<ResponseEntity<RoleTemplatesResponseDTO>> selectTemplatesToRole(
+    @PutMapping("/template-roles-select")
+    public Mono<ResponseEntity<TemplatePrivilegeDTO>> selectTemplatePrivilege(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
-            @RequestBody RoleTemplatesRequestDTO roleTemplatesRequestDTO) {
+            @RequestBody TemplatePrivilegeRequestDTO templatePrivilegeRequestDTO) {
         final String token = Utils.extractBearerToken(authHeader);
         final String role = jwtService.extractRole(token);
         final boolean locked = jwtService.extractLocked(token);
@@ -223,35 +226,30 @@ public class ClubMemberController {
         if (role.equals("ROLE_USER")) {
             return Mono.error(new AccessDeniedException("User cannot do this"));
         }
-        return roleCardTemplateService.findByRole(roleTemplatesRequestDTO.getRole())
-                .flatMap(roleCardTemplate -> {
-                    roleCardTemplate.setTemplates(roleCardTemplate.getTemplates());
-                    return roleCardTemplateService.save(roleCardTemplate);
-                })
-                .map(Utils::mapToRoleTemplatesResponseDTO)
-                .map(dto -> ResponseEntity.ok().body(dto))
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Templates to role: "
-                        + roleTemplatesRequestDTO.getRole() + " not found")));
+        return templatePrivilegeService.createTemplatePrivilegeMap()
+                .map(templatePrivilegeMap -> {
+                    templatePrivilegeMap
+                            .get(templatePrivilegeRequestDTO.getTemplate())
+                            .add(templatePrivilegeRequestDTO.getPrivilege());
+                    return templatePrivilegeMap;
+                }).map(templatePrivilegeMap ->
+                        ResponseEntity.ok().body(TemplatePrivilegeDTO.builder()
+                                .templatePrivilegesMap(templatePrivilegeMap).build()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
     }
 
     @GetMapping("/roles-templates")
-    public Mono<ResponseEntity<RoleTemplatesResponseDTO>> getTemplatesToRole(
+    public Mono<ResponseEntity<TemplatesToPrivilegeDTO>> getTemplatesToRole(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
-            @RequestBody GetTemplatesToRoleDTO getTemplatesToRoleDTO) {
+            @RequestParam String privilege) {
         final String token = Utils.extractBearerToken(authHeader);
-        final String role = jwtService.extractRole(token);
         final boolean locked = jwtService.extractLocked(token);
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
-        if (role.equals("ROLE_USER")) {
-            return Mono.error(new AccessDeniedException("User cannot do this"));
-        }
-        return roleCardTemplateService.findByRole(getTemplatesToRoleDTO.getRole())
-                .map(Utils::mapToRoleTemplatesResponseDTO)
-                .map(dto -> ResponseEntity.ok().body(dto))
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Templates to role: "
-                        + getTemplatesToRoleDTO.getRole() + " not found")));
+        return templatePrivilegeService.getTemplatesByPrivilege(privilege)
+                .map(set -> ResponseEntity.ok().body(TemplatesToPrivilegeDTO.builder().templates(set).build()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
     }
 
     @PutMapping("/profile/update-fields")

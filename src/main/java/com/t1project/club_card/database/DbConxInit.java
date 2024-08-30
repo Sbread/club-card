@@ -1,8 +1,9 @@
 package com.t1project.club_card.database;
 
 import com.t1project.club_card.models.ClubMember;
-import com.t1project.club_card.models.RoleCardTemplate;
+import com.t1project.club_card.models.TemplatePrivilege;
 import com.t1project.club_card.repositories.ClubMemberRepository;
+import com.t1project.club_card.repositories.TemplatePrivilegesRepository;
 import com.t1project.club_card.utils.Utils;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,7 +33,8 @@ public class DbConxInit {
     }
 
     @Bean
-    public CommandLineRunner init(ClubMemberRepository clubMemberRepository) {
+    public CommandLineRunner init(ClubMemberRepository clubMemberRepository,
+                                  TemplatePrivilegesRepository templatePrivilegesRepository) {
         return args -> {
             ClubMember superuser = ClubMember.builder()
                     .email("superuser@yandex.ru")
@@ -50,22 +52,13 @@ public class DbConxInit {
                     .onErrorResume(e -> clubMemberRepository.findByEmail("superuser@yandex.ru"))
                     .thenMany(clubMemberRepository.findAll())
                     .subscribe(System.out::println);
-
-            Set<String> userTemplates = new HashSet<>(List.of("one"));
-            Set<String> adminTemplates = new HashSet<>(List.of("one", "two"));
-            Set<String> superuserTemplates = new HashSet<>(List.of("one", "two", "three"));
-            RoleCardTemplate userCardTemplate = RoleCardTemplate.builder()
-                    .role("ROLE_USER")
-                    .templates(userTemplates)
-                    .build();
-            RoleCardTemplate adminCardTemplate = RoleCardTemplate.builder()
-                    .role("ROLE_ADMIN")
-                    .templates(adminTemplates)
-                    .build();
-            RoleCardTemplate superuserCardTemplate = RoleCardTemplate.builder()
-                    .role("ROLE_SUPERUSER")
-                    .templates(superuserTemplates)
-                    .build();
+            Set<String> tSet1 = new HashSet<>(List.of("ROLE_USER"));
+            Set<String> tSet2 = new HashSet<>(List.of("ROLE_USER", "ROLE_ADMIN"));
+            Set<String> tSet3 = new HashSet<>(List.of("ROLE_USER", "ROLE_ADMIN", "ROLE_SUPERUSER"));
+            TemplatePrivilege templatePrivilege1 = TemplatePrivilege.builder().template("1").privileges(tSet1).build();
+            TemplatePrivilege templatePrivilege2 = TemplatePrivilege.builder().template("2").privileges(tSet2).build();
+            TemplatePrivilege templatePrivilege3 = TemplatePrivilege.builder().template("3").privileges(tSet3).build();
+            templatePrivilegesRepository.saveAll(List.of(templatePrivilege1, templatePrivilege2, templatePrivilege3));
         };
     }
 }
