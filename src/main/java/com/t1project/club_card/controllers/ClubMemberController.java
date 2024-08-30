@@ -264,6 +264,9 @@ public class ClubMemberController {
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
+        if (!Utils.validateEmail(changeAllUserFieldsDTO.getEmail())) {
+            return Mono.error(new InvalidFieldException("Invalid email"));
+        }
         if (!Utils.validatePhone(changeAllUserFieldsDTO.getPhone())) {
             return Mono.error(new InvalidFieldException("Invalid phone"));
         }

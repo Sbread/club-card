@@ -64,6 +64,7 @@ public class ClubMemberService {
     public Mono<ClubMember> changeAllFields(Integer id, ChangeAllUserFieldsDTO fields) {
         return clubMemberRepository.findById(id)
                 .flatMap(clubMember -> {
+                    clubMember.setEmail(fields.getEmail());
                     clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(fields.getPassword()));
                     clubMember.setFirstName(fields.getFirstName());
                     clubMember.setLastName(fields.getLastName());
