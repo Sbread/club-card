@@ -5,6 +5,7 @@ import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.services.JWTService;
 import com.t1project.club_card.services.QRCodeService;
+import com.t1project.club_card.services.RoleCardTemplateService;
 import com.t1project.club_card.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping
@@ -32,6 +35,9 @@ public class ClubMemberController {
     @Autowired
     private QRCodeService qrCodeService;
 
+    @Autowired
+    private RoleCardTemplateService roleCardTemplateService;
+
     @GetMapping("/profile")
     public Mono<ResponseEntity<ResponseClubMemberDTO>> getCurrentClubMember(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
@@ -44,7 +50,7 @@ public class ClubMemberController {
     }
 
     @GetMapping("/profile/lock")
-    public Mono<ResponseEntity<Boolean>> selfLock(
+    public Mono<ResponseEntity<SelfLockResponseDTO>> selfLock(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
         final String token = Utils.extractBearerToken(authHeader);
         final String email = jwtService.extractUsername(token);
@@ -54,8 +60,11 @@ public class ClubMemberController {
         }
         return clubMemberService.findByEmail(email)
                 .map(clubMember -> {
-                    clubMember.setLocked(true);
-                    return clubMember.isLocked();
+                    if (!clubMember.getRole().equals("ROLE_SUPERUSER")) {
+                        clubMember.setLocked(true);
+                        return SelfLockResponseDTO.builder().locked(clubMember.isLocked()).build();
+                    }
+                    throw new AccessDeniedException("Superuser cannot lock himself");
                 })
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
@@ -138,7 +147,7 @@ public class ClubMemberController {
     public Mono<ResponseEntity<ResponseClubMemberDTO>> changePrivilegeById(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
             @PathVariable Integer id,
-            @RequestBody ChangeFieldDTO changeFieldDTO) {
+            @RequestBody ChangePrivilegeDTO changePrivilegeDTO) {
         final String token = Utils.extractBearerToken(authHeader);
         final String role = jwtService.extractRole(token);
         final boolean locked = jwtService.extractLocked(token);
@@ -149,7 +158,16 @@ public class ClubMemberController {
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
                     if (!role.equals("ROLE_USER") && !rl.equals("ROLE_SUPERUSER")) {
-                        clubMember.setPrivilege(changeFieldDTO.getValue());
+                        Set<String> privileges = clubMember.getPrivilege();
+                        if (changePrivilegeDTO.isAddOrDelete()) {
+                            privileges.remove(changePrivilegeDTO.getRole());
+                            if (privileges.isEmpty()) {
+                                privileges.add("STANDARD");
+                            }
+                        } else {
+                            privileges.add(changePrivilegeDTO.getRole());
+                        }
+                        clubMember.setPrivilege(privileges);
                         return clubMemberService.save(clubMember)
                                 .map(Utils::mapToResponseDTO)
                                 .map(dto -> ResponseEntity.status(HttpStatus.OK).body(dto))
@@ -190,6 +208,30 @@ public class ClubMemberController {
                 })
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("member not found")));
     }
+
+    @PostMapping("/add-template")
+    public Mono<ResponseEntity<AllTemplatesDTO>> addTemplate(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+                                                         @RequestBody AddTemplateRequestDTO addTemplateRequestDTO) {
+        final String token = Utils.extractBearerToken(authHeader);
+        final String role = jwtService.extractRole(token);
+        final boolean locked = jwtService.extractLocked(token);
+        if (locked) {
+            return Mono.error(new AccessDeniedException("Account is locked"));
+        }
+        if (role.equals("ROLE_USER")) {
+            throw new AccessDeniedException("User unable to add templates");
+        }
+        return roleCardTemplateService.addTemplate(addTemplateRequestDTO.getNumber())
+                .map(set -> {
+                    AllTemplatesDTO dto = AllTemplatesDTO.builder().templates(set).build();
+                    return ResponseEntity.ok(dto);
+                })
+                .switchIfEmpty(Mono.just(ResponseEntity.internalServerError().build()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
+    }
+
+//    @PutMapping("/roles-templates")
+//    public Mono<ResponseEntity<>>
 
     @PutMapping("/update-fields")
     public Mono<ResponseEntity<ResponseClubMemberDTO>> updateAllFields(

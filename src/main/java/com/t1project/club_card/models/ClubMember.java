@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Table("ClubMembers")
 @Data
@@ -31,9 +32,11 @@ public class ClubMember {
     @Column("birthday")
     private LocalDate birthday;
     @Column("privilege")
-    private String privilege;
+    private Set<String> privilege;
     @Column("isLocked")
     private boolean isLocked;
     @Column("role")
     private String role;
+    @Column("template")
+    private String template;
 }

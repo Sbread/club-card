@@ -48,7 +48,6 @@ public class AuthController {
         System.out.println(authRequestDTO.getEmail());
         Authentication authenticationToken
                 = new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword());
-        System.out.println(authRequestDTO.getEmail());
         return customReactiveAuthenticationManager.authenticate(authenticationToken)
                 .flatMap(authentication ->
                         Mono.zip(jwtService.GenerateToken(authRequestDTO.getEmail()),
@@ -88,7 +87,6 @@ public class AuthController {
                 .onErrorResume(e -> Mono.error(new RuntimeException("Smth went wrong")));
     }
 
-
     @PostMapping("/register")
     public Mono<ResponseEntity<ResponseClubMemberDTO>> registerClubMember(@RequestBody RegisterRequestDTO clubMember) {
         return clubMemberService.registerClubMember(clubMember)
@@ -99,11 +97,12 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    public Mono<ResponseEntity<String>> logout(@RequestHeader("Authorization") String authHeader) {
+    public Mono<ResponseEntity<LogoutDTO>> logout(@RequestHeader("Authorization") String authHeader,
+                                               @CookieValue(name = "refreshToken", required = false) String refreshToken) {
         String token = Utils.extractBearerToken(authHeader);
-        return blacklistTokenService.saveToken(token)
-                .map(saved -> ResponseEntity.status(HttpStatus.OK).body("Logout successfully"))
+        return refreshTokenService.deleteByToken(refreshToken).then(blacklistTokenService.saveToken(token)
+                .map(saved -> ResponseEntity.status(HttpStatus.OK).body(LogoutDTO.builder().status("successful").build()))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Logout failed\n" + e.getMessage())));
+                        .body(LogoutDTO.builder().status("deny").build()))));
     }
 }

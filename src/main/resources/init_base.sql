@@ -6,9 +6,10 @@ CREATE TABLE IF NOT EXISTS ClubMembers (
     lastName VARCHAR(255) NOT NULL,
     birthday date,
     phone VARCHAR(20),
-    privilege VARCHAR(20),
+    privilege TEXT[],
     isLocked boolean NOT NULL,
-    role VARCHAR(20)
+    role VARCHAR(20),
+    template VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS RefreshTokens (
@@ -22,4 +23,10 @@ CREATE TABLE IF NOT EXISTS RefreshTokens (
 CREATE TABLE IF NOT EXISTS BlacklistTokens (
     id SERIAL PRIMARY KEY,
     token VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS RoleCardsTemplates (
+    id serial PRIMARY KEY,
+    role VARCHAR(20) NOT NULL UNIQUE,
+    templates integer[]
 );
