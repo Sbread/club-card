@@ -8,7 +8,6 @@ import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.models.RoleCardTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.EnumMap;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
@@ -19,7 +18,7 @@ public final class Utils {
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
 
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+\\d{11}$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{11}$");
 
     public static final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 

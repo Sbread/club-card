@@ -8,6 +8,7 @@ import com.t1project.club_card.repositories.ClubMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -58,11 +59,14 @@ public class ClubMemberService {
         return clubMemberRepository.save(clubMember);
     }
 
-    public Mono<ClubMember> changeAllFields(Integer id, ChangeAllUserFieldsDTO fields) {
-        return clubMemberRepository.findById(id)
+    @Transactional
+    public Mono<ClubMember> changeAllFields(ChangeAllUserFieldsDTO fields) {
+        return clubMemberRepository.findByEmail(fields.getEmail())
                 .flatMap(clubMember -> {
                     clubMember.setEmail(fields.getEmail());
-                    clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(fields.getPassword()));
+                    if (fields.getPassword() != null) {
+                        clubMember.setPassword(Utils.bCryptPasswordEncoder.encode(fields.getPassword()));
+                    }
                     clubMember.setFirstName(fields.getFirstName());
                     clubMember.setLastName(fields.getLastName());
                     clubMember.setPhoneNumber(fields.getPhone());

@@ -270,8 +270,7 @@ public class ClubMemberController {
         if (!Utils.validatePhone(changeAllUserFieldsDTO.getPhone())) {
             return Mono.error(new InvalidFieldException("Invalid phone"));
         }
-        return clubMemberService.findByEmail(email).flatMap(clubMember ->
-                        clubMemberService.changeAllFields(clubMember.getId(), changeAllUserFieldsDTO))
+        return clubMemberService.changeAllFields(changeAllUserFieldsDTO)
                 .map(Utils::mapToResponseDTO)
                 .map(dto -> ResponseEntity.status(HttpStatus.OK).body(dto))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
