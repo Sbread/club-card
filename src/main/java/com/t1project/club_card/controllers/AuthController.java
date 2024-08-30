@@ -1,6 +1,8 @@
 package com.t1project.club_card.controllers;
 
 import com.t1project.club_card.dto.*;
+import com.t1project.club_card.exceptions.EmailExistedException;
+import com.t1project.club_card.exceptions.InvalidFieldException;
 import com.t1project.club_card.exceptions.RefreshTokenExpiredException;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.services.BlacklistTokenService;
@@ -89,11 +91,16 @@ public class AuthController {
 
     @PostMapping("/register")
     public Mono<ResponseEntity<ResponseClubMemberDTO>> registerClubMember(@RequestBody RegisterRequestDTO clubMember) {
+        if (!Utils.validateEmail(clubMember.getEmail())) {
+            throw new InvalidFieldException("Invalid email");
+        }
+        if (!Utils.validatePhone(clubMember.getPhone())) {
+            throw new InvalidFieldException("Invalid phone");
+        }
         return clubMemberService.registerClubMember(clubMember)
                 .map(Utils::mapToResponseDTO)
                 .map(dto -> ResponseEntity.status(HttpStatus.CREATED).body(dto))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ResponseClubMemberDTO.builder().build())));
+                .onErrorResume(e -> Mono.error(new EmailExistedException("email already exist")));
     }
 
     @GetMapping("/logout")

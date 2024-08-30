@@ -56,6 +56,14 @@ public class CustomWebExceptionHandler implements WebExceptionHandler {
                 status = HttpStatus.FORBIDDEN;
                 message = usernameNotFoundException.getMessage();
             }
+            case InvalidFieldException invalidFieldException -> {
+                status = HttpStatus.BAD_REQUEST;
+                message = invalidFieldException.getMessage();
+            }
+            case EmailExistedException emailExistedException -> {
+                status = HttpStatus.CONFLICT;
+                message = emailExistedException.getMessage();
+            }
             default -> {
                 System.out.println("UNHANDLED EXCEPTION " + ex);
                 status = HttpStatus.INTERNAL_SERVER_ERROR;

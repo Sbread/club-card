@@ -1,6 +1,7 @@
 package com.t1project.club_card.controllers;
 
 import com.t1project.club_card.dto.*;
+import com.t1project.club_card.exceptions.InvalidFieldException;
 import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.services.JWTService;
@@ -139,11 +140,11 @@ public class ClubMemberController {
                                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                         .build()));
                     } else {
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Cannot change role of same or higher access"));
+                        return Mono.error(new AccessDeniedException("Cannot change role of equals and higher access"));
                     }
                 })
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "member not found")));
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("member not found")))
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
     }
 
     @PutMapping("/members/{id}/change-privilege")
@@ -160,6 +161,7 @@ public class ClubMemberController {
         if (role.equals("ROLE_USER")) {
             return Mono.error(new AccessDeniedException("User cannot do this"));
         }
+        System.out.println(changeFieldDTO.getValue());
         return clubMemberService.findById(id)
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
@@ -171,7 +173,7 @@ public class ClubMemberController {
                                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                         .build()));
                     } else {
-                        return Mono.error(new AccessDeniedException("Cannot change role of same or higher access"));
+                        return Mono.error(new AccessDeniedException("Cannot change privilege of same or higher access"));
                     }
                 })
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("member not found")));
@@ -252,7 +254,7 @@ public class ClubMemberController {
                         + getTemplatesToRoleDTO.getRole() + " not found")));
     }
 
-    @PutMapping("/update-fields")
+    @PutMapping("/profile/update-fields")
     public Mono<ResponseEntity<ResponseClubMemberDTO>> updateAllFields(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
             @RequestBody ChangeAllUserFieldsDTO changeAllUserFieldsDTO) {
@@ -261,6 +263,9 @@ public class ClubMemberController {
         final boolean locked = jwtService.extractLocked(token);
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
+        }
+        if (!Utils.validatePhone(changeAllUserFieldsDTO.getPhone())) {
+            return Mono.error(new InvalidFieldException("Invalid phone"));
         }
         return clubMemberService.findByEmail(email).flatMap(clubMember ->
                         clubMemberService.changeAllFields(clubMember.getId(), changeAllUserFieldsDTO))

@@ -8,12 +8,18 @@ import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.models.RoleCardTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
 public final class Utils {
     private Utils() {
     }
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+\\d{11}$");
 
     public static final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -59,5 +65,13 @@ public final class Utils {
                 .role(roleCardTemplate.getRole())
                 .templates(roleCardTemplate.getTemplates())
                 .build();
+    }
+
+    public static boolean validateEmail(String email) {
+        return EMAIL_PATTERN.matcher(email).matches();
+    }
+
+    public static boolean validatePhone(String phone) {
+        return PHONE_PATTERN.matcher(phone).matches();
     }
 }
