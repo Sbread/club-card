@@ -72,6 +72,9 @@ public final class Utils {
     }
 
     public static boolean validatePhone(String phone) {
+        if (phone == null) {
+            return true;
+        }
         return PHONE_PATTERN.matcher(phone).matches();
     }
 }
