@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Set;
 
-@Table("RoleCardTemplates")
+@Table("TemplatesPrivileges")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

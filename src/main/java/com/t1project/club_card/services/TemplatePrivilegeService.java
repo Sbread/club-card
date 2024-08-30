@@ -23,6 +23,10 @@ public class TemplatePrivilegeService {
         return templatePrivilegesRepository.save(templatePrivilege);
     }
 
+    public Flux<TemplatePrivilege> findAll() {
+        return templatePrivilegesRepository.findAll();
+    }
+
     public Mono<Map<String, Set<String>>> createTemplatePrivilegeMap() {
         return findAllTemplates()
                 .flatMap(template ->

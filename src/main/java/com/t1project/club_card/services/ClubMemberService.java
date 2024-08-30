@@ -53,7 +53,7 @@ public class ClubMemberService {
                 .privilege("STANDARD")
                 .isLocked(false)
                 .role("ROLE_USER")
-                .template(null)
+                .template("1")
                 .build();
         System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);

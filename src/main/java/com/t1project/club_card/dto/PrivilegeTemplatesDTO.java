@@ -11,6 +11,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TemplatesToPrivilegeDTO {
+public class PrivilegeTemplatesDTO {
     private Set<String> templates;
 }

@@ -46,19 +46,21 @@ public class DbConxInit {
                     .privilege("VIP")
                     .isLocked(false)
                     .role("ROLE_SUPERUSER")
-                    .template(null)
+                    .template("1")
                     .build();
             clubMemberRepository.save(superuser)
                     .onErrorResume(e -> clubMemberRepository.findByEmail("superuser@yandex.ru"))
                     .thenMany(clubMemberRepository.findAll())
                     .subscribe(System.out::println);
-            Set<String> tSet1 = new HashSet<>(List.of("ROLE_USER"));
-            Set<String> tSet2 = new HashSet<>(List.of("ROLE_USER", "ROLE_ADMIN"));
-            Set<String> tSet3 = new HashSet<>(List.of("ROLE_USER", "ROLE_ADMIN", "ROLE_SUPERUSER"));
+            Set<String> tSet1 = new HashSet<>(List.of("STANDARD", "UP", "VIP"));
+            Set<String> tSet2 = new HashSet<>(List.of("UP", "VIP"));
+            Set<String> tSet3 = new HashSet<>(List.of("VIP"));
             TemplatePrivilege templatePrivilege1 = TemplatePrivilege.builder().template("1").privileges(tSet1).build();
             TemplatePrivilege templatePrivilege2 = TemplatePrivilege.builder().template("2").privileges(tSet2).build();
             TemplatePrivilege templatePrivilege3 = TemplatePrivilege.builder().template("3").privileges(tSet3).build();
-            templatePrivilegesRepository.saveAll(List.of(templatePrivilege1, templatePrivilege2, templatePrivilege3));
+            templatePrivilegesRepository.saveAll(List.of(templatePrivilege1, templatePrivilege2, templatePrivilege3))
+                    .onErrorResume(e -> templatePrivilegesRepository.findAll())
+                    .subscribe(System.out::println);
         };
     }
 }

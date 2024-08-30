@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS ClubMembers (
     privilege VARCHAR(20),
     isLocked boolean NOT NULL,
     role VARCHAR(20),
-    template VARCHAR(255)
+    template VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS RefreshTokens (

@@ -2,6 +2,7 @@ package com.t1project.club_card.controllers;
 
 import com.t1project.club_card.dto.*;
 import com.t1project.club_card.exceptions.InvalidFieldException;
+import com.t1project.club_card.models.TemplatePrivilege;
 import com.t1project.club_card.services.ClubMemberService;
 import com.t1project.club_card.models.ClubMember;
 import com.t1project.club_card.services.JWTService;
@@ -9,7 +10,6 @@ import com.t1project.club_card.services.QRCodeService;
 import com.t1project.club_card.services.TemplatePrivilegeService;
 import com.t1project.club_card.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,10 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping
@@ -51,6 +49,41 @@ public class ClubMemberController {
                 .map(Utils::mapToResponseDTO)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+    }
+
+    @PutMapping("/profile/card/select")
+    public Mono<ResponseEntity<ProfileTemplateDTO>> selectTemplate(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestBody ProfileTemplateDTO profileTemplateDTO) {
+        final String token = Utils.extractBearerToken(authHeader);
+        final String email = jwtService.extractUsername(token);
+        final boolean locked = jwtService.extractLocked(token);
+        if (locked) {
+            return Mono.error(new AccessDeniedException("Account is locked"));
+        }
+        return clubMemberService.findByEmail(email)
+                .flatMap(clubMember -> {
+                    clubMember.setTemplate(profileTemplateDTO.getTemplate());
+                    return clubMemberService.save(clubMember);
+                })
+                .map(member -> ResponseEntity.ok().body(ProfileTemplateDTO.builder()
+                        .template(member.getTemplate()).build()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
+    }
+
+    @GetMapping("/profile/card")
+    public Mono<ResponseEntity<ProfileTemplateDTO>> getCard(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        final String token = Utils.extractBearerToken(authHeader);
+        final String email = jwtService.extractUsername(token);
+        final boolean locked = jwtService.extractLocked(token);
+        if (locked) {
+            return Mono.error(new AccessDeniedException("Account is locked"));
+        }
+        return clubMemberService.findByEmail(email)
+                .map(ClubMember::getTemplate)
+                .map(template -> ResponseEntity.ok().body(ProfileTemplateDTO.builder().template(template).build()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
     }
 
     @GetMapping("/profile/lock")
@@ -213,10 +246,9 @@ public class ClubMemberController {
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("member not found")));
     }
 
-    @PutMapping("/template-roles-select")
-    public Mono<ResponseEntity<TemplatePrivilegeDTO>> selectTemplatePrivilege(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
-            @RequestBody TemplatePrivilegeRequestDTO templatePrivilegeRequestDTO) {
+    @GetMapping("/template-privilege/all")
+    public Mono<ResponseEntity<TemplatePrivilegeDTO>> allTemplatePrivilege(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
         final String token = Utils.extractBearerToken(authHeader);
         final String role = jwtService.extractRole(token);
         final boolean locked = jwtService.extractLocked(token);
@@ -227,28 +259,59 @@ public class ClubMemberController {
             return Mono.error(new AccessDeniedException("User cannot do this"));
         }
         return templatePrivilegeService.createTemplatePrivilegeMap()
-                .map(templatePrivilegeMap -> {
-                    templatePrivilegeMap
-                            .get(templatePrivilegeRequestDTO.getTemplate())
-                            .add(templatePrivilegeRequestDTO.getPrivilege());
-                    return templatePrivilegeMap;
-                }).map(templatePrivilegeMap ->
+                .map(templatePrivilegeMap ->
                         ResponseEntity.ok().body(TemplatePrivilegeDTO.builder()
                                 .templatePrivilegesMap(templatePrivilegeMap).build()))
                 .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
     }
 
-    @GetMapping("/roles-templates")
-    public Mono<ResponseEntity<TemplatesToPrivilegeDTO>> getTemplatesToRole(
+    @PutMapping("/template-privilege/select")
+    public Mono<ResponseEntity<TemplatePrivilegeDTO>> selectTemplatePrivilege(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
-            @RequestParam String privilege) {
+            @RequestBody TemplatePrivilegeDTO templatePrivilegeDTO) {
         final String token = Utils.extractBearerToken(authHeader);
+        final String role = jwtService.extractRole(token);
+        final boolean locked = jwtService.extractLocked(token);
+        if (locked) {
+            return Mono.error(new AccessDeniedException("Account is locked"));
+        }
+        if (role.equals("ROLE_USER")) {
+            return Mono.error(new AccessDeniedException("User cannot do this"));
+        }
+        if (templatePrivilegeDTO.getTemplatePrivilegesMap().values().stream().anyMatch(Set::isEmpty)) {
+            throw new InvalidFieldException("Zero templates for privilege cannot be chosen");
+        }
+        return templatePrivilegeService.findAll()
+                .flatMap(templatePrivilege -> {
+                    String template = templatePrivilege.getTemplate();
+                    templatePrivilege.setPrivileges(templatePrivilegeDTO.getTemplatePrivilegesMap().get(template));
+                    return templatePrivilegeService.save(templatePrivilege);
+                })
+                .collectList()
+                .map(updatedPrivileges -> {
+                            TemplatePrivilegeDTO updatedDTO = TemplatePrivilegeDTO.builder()
+                                    .templatePrivilegesMap(updatedPrivileges.stream().collect(Collectors.toMap(
+                                            TemplatePrivilege::getTemplate,
+                                            TemplatePrivilege::getPrivileges
+                                    ))).build();
+                            return ResponseEntity.ok().body(updatedDTO);
+                        }
+                )
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
+    }
+
+
+    @GetMapping("/profile/privilege-templates")
+    public Mono<ResponseEntity<PrivilegeTemplatesDTO>> getTemplatesToPrivilege(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        final String token = Utils.extractBearerToken(authHeader);
+        final String privilege = jwtService.extractPrivilege(token);
         final boolean locked = jwtService.extractLocked(token);
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
         return templatePrivilegeService.getTemplatesByPrivilege(privilege)
-                .map(set -> ResponseEntity.ok().body(TemplatesToPrivilegeDTO.builder().templates(set).build()))
+                .map(set -> ResponseEntity.ok().body(PrivilegeTemplatesDTO.builder().templates(set).build()))
                 .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
     }
 

@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TemplatePrivilegeRequestDTO {
+public class ProfileTemplateDTO {
     private String template;
-    private String privilege;
 }
