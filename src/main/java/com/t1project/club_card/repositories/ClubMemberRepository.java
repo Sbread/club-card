@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 @Repository
 public interface ClubMemberRepository extends ReactiveCrudRepository<ClubMember, Integer> {
 
-    Flux<ClubMember> findAllByEmailNot(Pageable pageable, String email);
+    Flux<ClubMember> findAllByEmailNotAndEmailNot(Pageable pageable, String email, String supEmail);
 
     Mono<ClubMember> findByEmail(String email);
 }

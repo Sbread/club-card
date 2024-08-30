@@ -31,7 +31,7 @@ public class ClubMemberService {
     }
 
     public Flux<ClubMember> findAllPaged(int page, int size, String email) {
-        return clubMemberRepository.findAllByEmailNot(PageRequest.of(page, size), email);
+        return clubMemberRepository.findAllByEmailNotAndEmailNot(PageRequest.of(page, size), email, "superuser@yandex.ru");
     }
 
     public Mono<Long> countAll() {
