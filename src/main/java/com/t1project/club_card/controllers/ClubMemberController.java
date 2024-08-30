@@ -77,6 +77,7 @@ public class ClubMemberController {
             @RequestParam(defaultValue = "10") int size) {
         final String token = Utils.extractBearerToken(authHeader);
         final String role = jwtService.extractRole(token);
+        final String email = jwtService.extractUsername(token);
         final boolean locked = jwtService.extractLocked(token);
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
@@ -85,7 +86,7 @@ public class ClubMemberController {
             return Mono.error(new AccessDeniedException("User cannot do this"));
         }
         Mono<Long> countAll = clubMemberService.countAll();
-        Flux<ClubMember> membersOnPage = clubMemberService.findAllPaged(page, size);
+        Flux<ClubMember> membersOnPage = clubMemberService.findAllPaged(page, size, email);
         return membersOnPage.collectList().zipWith(countAll)
                 .map(tuple -> Utils.mapToPageResponseDTO(tuple.getT1(), tuple.getT2()))
                 .map(ResponseEntity::ok)
@@ -165,12 +166,12 @@ public class ClubMemberController {
                     if (!rl.equals("ROLE_SUPERUSER")) {
                         Set<String> privileges = clubMember.getPrivilege();
                         if (changePrivilegeDTO.isAddOrDelete()) {
-                            privileges.remove(changePrivilegeDTO.getRole());
+                            privileges.remove(changePrivilegeDTO.getPrivilege());
                             if (privileges.isEmpty()) {
                                 privileges.add("STANDARD");
                             }
                         } else {
-                            privileges.add(changePrivilegeDTO.getRole());
+                            privileges.add(changePrivilegeDTO.getPrivilege());
                         }
                         clubMember.setPrivilege(privileges);
                         return clubMemberService.save(clubMember)

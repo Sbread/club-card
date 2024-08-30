@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ChangePrivilegeDTO {
-    private String role;
+    private String privilege;
     private boolean addOrDelete;
 }

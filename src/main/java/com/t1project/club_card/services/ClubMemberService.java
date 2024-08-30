@@ -32,8 +32,8 @@ public class ClubMemberService {
         return clubMemberRepository.findAll();
     }
 
-    public Flux<ClubMember> findAllPaged(int page, int size) {
-        return clubMemberRepository.findAllBy(PageRequest.of(page, size));
+    public Flux<ClubMember> findAllPaged(int page, int size, String email) {
+        return clubMemberRepository.findAllByEmailNot(PageRequest.of(page, size), email);
     }
 
     public Mono<Long> countAll() {
