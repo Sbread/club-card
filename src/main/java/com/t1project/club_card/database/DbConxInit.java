@@ -14,6 +14,7 @@ import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Configuration
@@ -50,9 +51,9 @@ public class DbConxInit {
                     .thenMany(clubMemberRepository.findAll())
                     .subscribe(System.out::println);
 
-            Set<String> userTemplates = new HashSet<>();
-            Set<String> adminTemplates = new HashSet<>();
-            Set<String> superuserTemplates = new HashSet<>();
+            Set<String> userTemplates = new HashSet<>(List.of("one"));
+            Set<String> adminTemplates = new HashSet<>(List.of("one", "two"));
+            Set<String> superuserTemplates = new HashSet<>(List.of("one", "two", "three"));
             RoleCardTemplate userCardTemplate = RoleCardTemplate.builder()
                     .role("ROLE_USER")
                     .templates(userTemplates)
