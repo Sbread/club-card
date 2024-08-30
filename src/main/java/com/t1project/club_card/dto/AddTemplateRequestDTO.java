@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class AddTemplateRequestDTO {
-    private int number;
+    private String template;
 }

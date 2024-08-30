@@ -3,7 +3,9 @@ package com.t1project.club_card.utils;
 import com.t1project.club_card.dto.JwtResponseDTO;
 import com.t1project.club_card.dto.MembersPageDTO;
 import com.t1project.club_card.dto.ResponseClubMemberDTO;
+import com.t1project.club_card.dto.RoleTemplatesResponseDTO;
 import com.t1project.club_card.models.ClubMember;
+import com.t1project.club_card.models.RoleCardTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
@@ -49,6 +51,13 @@ public final class Utils {
         return MembersPageDTO.builder()
                 .result(membersDTOs)
                 .total(total)
+                .build();
+    }
+
+    public static RoleTemplatesResponseDTO mapToRoleTemplatesResponseDTO(RoleCardTemplate roleCardTemplate) {
+        return RoleTemplatesResponseDTO.builder()
+                .role(roleCardTemplate.getRole())
+                .templates(roleCardTemplate.getTemplates())
                 .build();
     }
 }

@@ -12,5 +12,5 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 public class AllTemplatesDTO {
-    private Set<Integer> templates;
+    private Set<String> templates;
 }

@@ -11,7 +11,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RoleTemplatesResponseDTO {
+public class RoleTemplatesRequestDTO {
     private String role;
     private Set<String> templates;
 }

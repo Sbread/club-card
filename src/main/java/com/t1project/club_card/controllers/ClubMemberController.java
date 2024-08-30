@@ -81,15 +81,15 @@ public class ClubMemberController {
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
-        if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPERUSER")) {
-            Mono<Long> countAll = clubMemberService.countAll();
-            Flux<ClubMember> membersOnPage = clubMemberService.findAllPaged(page, size);
-            return membersOnPage.collectList().zipWith(countAll)
-                    .map(tuple -> Utils.mapToPageResponseDTO(tuple.getT1(), tuple.getT2()))
-                    .map(ResponseEntity::ok)
-                    .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
+        if (role.equals("ROLE_USER")) {
+            return Mono.error(new AccessDeniedException("User cannot do this"));
         }
-        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
+        Mono<Long> countAll = clubMemberService.countAll();
+        Flux<ClubMember> membersOnPage = clubMemberService.findAllPaged(page, size);
+        return membersOnPage.collectList().zipWith(countAll)
+                .map(tuple -> Utils.mapToPageResponseDTO(tuple.getT1(), tuple.getT2()))
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
     }
 
     @GetMapping("/members/{id}")
@@ -102,14 +102,14 @@ public class ClubMemberController {
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
-        if (role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPERUSER")) {
-            return clubMemberService.findById(id)
-                    .map(Utils::mapToResponseDTO)
-                    .map(ResponseEntity::ok)
-                    .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()))
-                    .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+        if (role.equals("ROLE_USER")) {
+            return Mono.error(new AccessDeniedException("User cannot do this"));
         }
-        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+        return clubMemberService.findById(id)
+                .map(Utils::mapToResponseDTO)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
     @PutMapping("/members/{id}/change-role")
@@ -123,12 +123,14 @@ public class ClubMemberController {
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
+        if (role.equals("ROLE_USER")) {
+            return Mono.error(new AccessDeniedException("User cannot do this"));
+        }
         return clubMemberService.findById(id)
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
                     if (!changeFieldDTO.getValue().equals("ROLE_SUPERUSER")
-                            && ((rl.equals("ROLE_USER") && !role.equals("ROLE_USER"))
-                            || (rl.equals("ROLE_ADMIN") && role.equals("ROLE_SUPERUSER")))) {
+                            && (rl.equals("ROLE_USER") || (rl.equals("ROLE_ADMIN") && role.equals("ROLE_SUPERUSER")))) {
                         clubMember.setRole(changeFieldDTO.getValue());
                         return clubMemberService.save(clubMember)
                                 .map(Utils::mapToResponseDTO)
@@ -154,10 +156,13 @@ public class ClubMemberController {
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
+        if (role.equals("ROLE_USER")) {
+            return Mono.error(new AccessDeniedException("User cannot do this"));
+        }
         return clubMemberService.findById(id)
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
-                    if (!role.equals("ROLE_USER") && !rl.equals("ROLE_SUPERUSER")) {
+                    if (!rl.equals("ROLE_SUPERUSER")) {
                         Set<String> privileges = clubMember.getPrivilege();
                         if (changePrivilegeDTO.isAddOrDelete()) {
                             privileges.remove(changePrivilegeDTO.getRole());
@@ -191,11 +196,13 @@ public class ClubMemberController {
         if (locked) {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
+        if (role.equals("ROLE_USER")) {
+            return Mono.error(new AccessDeniedException("User cannot do this"));
+        }
         return clubMemberService.findById(id)
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
-                    if ((rl.equals("ROLE_USER") && !role.equals("ROLE_USER"))
-                            || (rl.equals("ROLE_ADMIN") && role.equals("ROLE_SUPERUSER"))) {
+                    if (rl.equals("ROLE_USER") || (rl.equals("ROLE_ADMIN") && role.equals("ROLE_SUPERUSER"))) {
                         clubMember.setLocked(lockedRequestDTO.isLocked());
                         return clubMemberService.save(clubMember)
                                 .map(Utils::mapToResponseDTO)
@@ -209,9 +216,10 @@ public class ClubMemberController {
                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("member not found")));
     }
 
-    @PostMapping("/add-template")
-    public Mono<ResponseEntity<AllTemplatesDTO>> addTemplate(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
-                                                         @RequestBody AddTemplateRequestDTO addTemplateRequestDTO) {
+    @PutMapping("/roles-templates")
+    public Mono<ResponseEntity<RoleTemplatesResponseDTO>> selectTemplatesToRole(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestBody RoleTemplatesRequestDTO roleTemplatesRequestDTO) {
         final String token = Utils.extractBearerToken(authHeader);
         final String role = jwtService.extractRole(token);
         final boolean locked = jwtService.extractLocked(token);
@@ -219,19 +227,38 @@ public class ClubMemberController {
             return Mono.error(new AccessDeniedException("Account is locked"));
         }
         if (role.equals("ROLE_USER")) {
-            throw new AccessDeniedException("User unable to add templates");
+            return Mono.error(new AccessDeniedException("User cannot do this"));
         }
-        return roleCardTemplateService.addTemplate(addTemplateRequestDTO.getNumber())
-                .map(set -> {
-                    AllTemplatesDTO dto = AllTemplatesDTO.builder().templates(set).build();
-                    return ResponseEntity.ok(dto);
+        return roleCardTemplateService.findByRole(roleTemplatesRequestDTO.getRole())
+                .flatMap(roleCardTemplate -> {
+                    roleCardTemplate.setTemplates(roleCardTemplate.getTemplates());
+                    return roleCardTemplateService.save(roleCardTemplate);
                 })
-                .switchIfEmpty(Mono.just(ResponseEntity.internalServerError().build()))
-                .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError().build()));
+                .map(Utils::mapToRoleTemplatesResponseDTO)
+                .map(dto -> ResponseEntity.ok().body(dto))
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Templates to role: "
+                        + roleTemplatesRequestDTO.getRole() + " not found")));
     }
 
-//    @PutMapping("/roles-templates")
-//    public Mono<ResponseEntity<>>
+    @GetMapping("/roles-templates")
+    public Mono<ResponseEntity<RoleTemplatesResponseDTO>> getTemplatesToRole(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestBody GetTemplatesToRoleDTO getTemplatesToRoleDTO) {
+        final String token = Utils.extractBearerToken(authHeader);
+        final String role = jwtService.extractRole(token);
+        final boolean locked = jwtService.extractLocked(token);
+        if (locked) {
+            return Mono.error(new AccessDeniedException("Account is locked"));
+        }
+        if (role.equals("ROLE_USER")) {
+            return Mono.error(new AccessDeniedException("User cannot do this"));
+        }
+        return roleCardTemplateService.findByRole(getTemplatesToRoleDTO.getRole())
+                .map(Utils::mapToRoleTemplatesResponseDTO)
+                .map(dto -> ResponseEntity.ok().body(dto))
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Templates to role: "
+                        + getTemplatesToRoleDTO.getRole() + " not found")));
+    }
 
     @PutMapping("/update-fields")
     public Mono<ResponseEntity<ResponseClubMemberDTO>> updateAllFields(

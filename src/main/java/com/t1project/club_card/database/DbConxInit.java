@@ -1,6 +1,7 @@
 package com.t1project.club_card.database;
 
 import com.t1project.club_card.models.ClubMember;
+import com.t1project.club_card.models.RoleCardTemplate;
 import com.t1project.club_card.repositories.ClubMemberRepository;
 import com.t1project.club_card.utils.Utils;
 import io.r2dbc.spi.ConnectionFactory;
@@ -50,6 +51,22 @@ public class DbConxInit {
                     .onErrorResume(e -> clubMemberRepository.findByEmail("superuser@yandex.ru"))
                     .thenMany(clubMemberRepository.findAll())
                     .subscribe(System.out::println);
+
+            Set<String> userTemplates = new HashSet<>();
+            Set<String> adminTemplates = new HashSet<>();
+            Set<String> superuserTemplates = new HashSet<>();
+            RoleCardTemplate userCardTemplate = RoleCardTemplate.builder()
+                    .role("ROLE_USER")
+                    .templates(userTemplates)
+                    .build();
+            RoleCardTemplate adminCardTemplate = RoleCardTemplate.builder()
+                    .role("ROLE_ADMIN")
+                    .templates(adminTemplates)
+                    .build();
+            RoleCardTemplate superuserCardTemplate = RoleCardTemplate.builder()
+                    .role("ROLE_SUPERUSER")
+                    .templates(superuserTemplates)
+                    .build();
         };
     }
 }

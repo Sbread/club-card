@@ -6,22 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Service
 public class RoleCardTemplateService {
 
     @Autowired
     private RoleCardTemplateRepository roleCardTemplateRepository;
 
-    public Mono<Set<Integer>> addTemplate(int number) {
-        return roleCardTemplateRepository.findByRole("ROLE_SUPERUSER")
-                .flatMap(roleCardTemplate -> {
-                    Set<Integer> templates = roleCardTemplate.getTemplates();
-                    templates.add(number);
-                    roleCardTemplate.setTemplates(templates);
-                    return roleCardTemplateRepository.save(roleCardTemplate).map(RoleCardTemplate::getTemplates);
-                });
+    public Mono<RoleCardTemplate> findByRole(String role) {
+        return roleCardTemplateRepository.findByRole(role);
+    }
+
+    public Mono<RoleCardTemplate> save(RoleCardTemplate roleCardTemplate) {
+        return roleCardTemplateRepository.save(roleCardTemplate);
     }
 }

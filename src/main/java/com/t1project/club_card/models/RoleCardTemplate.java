@@ -21,5 +21,5 @@ public class RoleCardTemplate {
     @Column("role")
     private String role;
     @Column("templates")
-    private Set<Integer> templates;
+    private Set<String> templates;
 }
