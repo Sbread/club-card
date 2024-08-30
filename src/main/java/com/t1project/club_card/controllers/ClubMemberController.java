@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -331,7 +330,7 @@ public class ClubMemberController {
         if (!Utils.validatePhone(changeAllUserFieldsDTO.getPhone())) {
             return Mono.error(new InvalidFieldException("Invalid phone"));
         }
-        return clubMemberService.changeAllFields(changeAllUserFieldsDTO)
+        return clubMemberService.changeAllFields(email, changeAllUserFieldsDTO)
                 .map(Utils::mapToResponseDTO)
                 .map(dto -> ResponseEntity.status(HttpStatus.OK).body(dto))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));

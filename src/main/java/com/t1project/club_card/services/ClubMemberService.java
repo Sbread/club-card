@@ -60,7 +60,7 @@ public class ClubMemberService {
     }
 
     @Transactional
-    public Mono<ClubMember> changeAllFields(ChangeAllUserFieldsDTO fields) {
+    public Mono<ClubMember> changeAllFields(String email, ChangeAllUserFieldsDTO fields) {
         return clubMemberRepository.findByEmail(fields.getEmail())
                 .flatMap(clubMember -> {
                     clubMember.setEmail(fields.getEmail());
