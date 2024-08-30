@@ -52,6 +52,7 @@ public class SecurityConfig {
                                 .permitAll()
                                 .anyExchange()
                                 .authenticated())
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .authenticationManager(customReactiveAuthenticationManager)
                 .build();
