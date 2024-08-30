@@ -20,6 +20,6 @@ public class ResponseClubMemberDTO {
     private String phone;
     private LocalDate birthDay;
     private String role;
-    private Set<String> privilege;
+    private String privilege;
     private boolean locked;
 }

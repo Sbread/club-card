@@ -150,7 +150,7 @@ public class ClubMemberController {
     public Mono<ResponseEntity<ResponseClubMemberDTO>> changePrivilegeById(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
             @PathVariable Integer id,
-            @RequestBody ChangePrivilegeDTO changePrivilegeDTO) {
+            @RequestBody ChangeFieldDTO changeFieldDTO) {
         final String token = Utils.extractBearerToken(authHeader);
         final String role = jwtService.extractRole(token);
         final boolean locked = jwtService.extractLocked(token);
@@ -164,16 +164,7 @@ public class ClubMemberController {
                 .flatMap(clubMember -> {
                     final String rl = clubMember.getRole();
                     if (!rl.equals("ROLE_SUPERUSER")) {
-                        Set<String> privileges = clubMember.getPrivilege();
-                        if (changePrivilegeDTO.isAddOrDelete()) {
-                            privileges.remove(changePrivilegeDTO.getPrivilege());
-                            if (privileges.isEmpty()) {
-                                privileges.add("STANDARD");
-                            }
-                        } else {
-                            privileges.add(changePrivilegeDTO.getPrivilege());
-                        }
-                        clubMember.setPrivilege(privileges);
+                        clubMember.setPrivilege(changeFieldDTO.getValue());
                         return clubMemberService.save(clubMember)
                                 .map(Utils::mapToResponseDTO)
                                 .map(dto -> ResponseEntity.status(HttpStatus.OK).body(dto))

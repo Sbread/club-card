@@ -32,7 +32,7 @@ public class ClubMember {
     @Column("birthday")
     private LocalDate birthday;
     @Column("privilege")
-    private Set<String> privilege;
+    private String privilege;
     @Column("isLocked")
     private boolean isLocked;
     @Column("role")

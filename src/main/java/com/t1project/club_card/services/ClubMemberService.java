@@ -45,8 +45,6 @@ public class ClubMemberService {
     }
 
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
-        Set<String> privilege = new HashSet<>();
-        privilege.add("STANDARD");
         final ClubMember clubMember = ClubMember.builder()
                 .email(registerRequestDTO.getEmail())
                 .password(Utils.bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()))
@@ -54,7 +52,7 @@ public class ClubMemberService {
                 .lastName(registerRequestDTO.getLastName())
                 .phoneNumber(registerRequestDTO.getPhone())
                 .birthday(null)
-                .privilege(privilege)
+                .privilege("STANDARD")
                 .isLocked(false)
                 .role("ROLE_USER")
                 .template(null)

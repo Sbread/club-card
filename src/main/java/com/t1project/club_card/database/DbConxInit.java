@@ -33,8 +33,6 @@ public class DbConxInit {
     @Bean
     public CommandLineRunner init(ClubMemberRepository clubMemberRepository) {
         return args -> {
-            Set<String> privileges = new HashSet<>();
-            privileges.add("VIP");
             ClubMember superuser = ClubMember.builder()
                     .email("superuser@yandex.ru")
                     .password(Utils.bCryptPasswordEncoder.encode("supPas2608"))
@@ -42,7 +40,7 @@ public class DbConxInit {
                     .firstName("sup")
                     .lastName("sup")
                     .birthday(null)
-                    .privilege(privileges)
+                    .privilege("VIP")
                     .isLocked(false)
                     .role("ROLE_SUPERUSER")
                     .template(null)

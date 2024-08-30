@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS ClubMembers (
     lastName VARCHAR(255) NOT NULL,
     birthday date,
     phone VARCHAR(20),
-    privilege TEXT[],
+    privilege VARCHAR(20),
     isLocked boolean NOT NULL,
     role VARCHAR(20),
     template VARCHAR(255)
