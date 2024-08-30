@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
@@ -54,7 +55,7 @@ public class JWTService {
         return createToken(claims, email);
     }
 
-
+    @Transactional(readOnly = true)
     private Mono<String> createToken(Map<String, Object> claims, String email) {
         return clubMemberService.findByEmail(email).map(
                 clubMember -> {

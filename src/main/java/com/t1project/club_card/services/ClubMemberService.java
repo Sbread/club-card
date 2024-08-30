@@ -18,30 +18,32 @@ public class ClubMemberService {
     @Autowired
     private ClubMemberRepository clubMemberRepository;
 
+    @Transactional(readOnly = true)
     public Mono<ClubMember> findById(Integer id) {
         return clubMemberRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
     public Mono<ClubMember> findByEmail(String email) {
         return clubMemberRepository.findByEmail(email);
     }
 
-    public Flux<ClubMember> findAll() {
-        return clubMemberRepository.findAll();
-    }
-
+    @Transactional(readOnly = true)
     public Flux<ClubMember> findAllPaged(int page, int size, String email) {
         return clubMemberRepository.findAllByEmailNotAndEmailNot(PageRequest.of(page, size), email, "superuser@yandex.ru");
     }
 
+    @Transactional(readOnly = true)
     public Mono<Long> countAll() {
         return clubMemberRepository.count();
     }
 
+    @Transactional
     public Mono<ClubMember> save(ClubMember clubMember) {
         return clubMemberRepository.save(clubMember);
     }
 
+    @Transactional
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
         final ClubMember clubMember = ClubMember.builder()
                 .email(registerRequestDTO.getEmail())
@@ -55,7 +57,6 @@ public class ClubMemberService {
                 .role("ROLE_USER")
                 .template("1")
                 .build();
-        System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);
     }
 

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -19,6 +20,7 @@ public class ClubMemberUserDetailsService implements ReactiveUserDetailsService 
 
     private static final Logger logger = LoggerFactory.getLogger(ClubMemberUserDetailsService.class);
 
+    @Transactional(readOnly = true)
     @Override
     public Mono<UserDetails> findByUsername(String username) {
         return clubMemberRepository.findByEmail(username)

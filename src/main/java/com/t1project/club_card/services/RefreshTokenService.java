@@ -7,6 +7,7 @@ import com.t1project.club_card.repositories.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -38,6 +39,7 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
+    @Transactional
     public Mono<String> updateToken(RefreshToken refreshToken) {
         return refreshTokenRepository.save(updToken(refreshToken))
                 .map(RefreshToken::getToken);
@@ -53,6 +55,7 @@ public class RefreshTokenService {
                 .build();
     }
 
+    @Transactional
     public Mono<RefreshToken> createRefreshToken(String username) {
         return clubMemberRepository.findByEmail(username).flatMap(
                 clubMember -> {
@@ -62,10 +65,12 @@ public class RefreshTokenService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Mono<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
     }
 
+    @Transactional
     public Mono<Void> deleteByToken(String token) {
         return refreshTokenRepository.deleteByToken(token);
     }

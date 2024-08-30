@@ -4,6 +4,7 @@ import com.t1project.club_card.models.TemplatePrivilege;
 import com.t1project.club_card.repositories.TemplatePrivilegesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -15,14 +16,17 @@ public class TemplatePrivilegeService {
     @Autowired
     private TemplatePrivilegesRepository templatePrivilegesRepository;
 
+    @Transactional(readOnly = true)
     public Mono<TemplatePrivilege> findByTemplate(String template) {
         return templatePrivilegesRepository.findByTemplate(template);
     }
 
+    @Transactional
     public Mono<TemplatePrivilege> save(TemplatePrivilege templatePrivilege) {
         return templatePrivilegesRepository.save(templatePrivilege);
     }
 
+    @Transactional(readOnly = true)
     public Flux<TemplatePrivilege> findAll() {
         return templatePrivilegesRepository.findAll();
     }
@@ -33,11 +37,12 @@ public class TemplatePrivilegeService {
                         findByTemplate(template)
                                 .map(templatePrivilege -> Map.entry(template, templatePrivilege.getPrivileges()))
                 )
-                .collectMap(Map.Entry::getKey, Map.Entry::getValue); // Collect into a Map
+                .collectMap(Map.Entry::getKey, Map.Entry::getValue);
     }
 
+    @Transactional(readOnly = true)
     public Flux<String> findAllTemplates() {
-        return templatePrivilegesRepository.findAll().map(TemplatePrivilege::getTemplate); // Returns Flux<String> of template names
+        return templatePrivilegesRepository.findAll().map(TemplatePrivilege::getTemplate);
     }
 
     public Mono<Map<String, Set<String>>> invertTemplatePrivilegeMap() {
