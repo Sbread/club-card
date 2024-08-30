@@ -56,6 +56,9 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .authenticationManager(customReactiveAuthenticationManager)
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling.authenticationEntryPoint(new NoWwwAuthenticateEntryPoint())
+                )
                 .build();
     }
 
