@@ -278,9 +278,9 @@ public class ClubMemberController {
         if (role.equals("ROLE_USER")) {
             return Mono.error(new AccessDeniedException("User cannot do this"));
         }
-        if (templatePrivilegeDTO.getTemplatePrivilegesMap().values().stream().anyMatch(Set::isEmpty)) {
-            throw new InvalidFieldException("Zero templates for privilege cannot be chosen");
-        }
+//        if (templatePrivilegeDTO.getTemplatePrivilegesMap().values().stream().anyMatch(Set::isEmpty)) {
+//            throw new InvalidFieldException("Zero templates for privilege cannot be chosen");
+//        }
         return templatePrivilegeService.findAll()
                 .flatMap(templatePrivilege -> {
                     String template = templatePrivilege.getTemplate();
