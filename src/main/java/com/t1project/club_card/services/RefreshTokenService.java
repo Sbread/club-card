@@ -66,6 +66,10 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
+    public Mono<Void> deleteByToken(String token) {
+        return refreshTokenRepository.deleteByToken(token);
+    }
+
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);

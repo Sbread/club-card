@@ -8,4 +8,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface RefreshTokenRepository extends ReactiveCrudRepository<RefreshToken, Integer> {
     Mono<RefreshToken> findByToken(String token);
+
+    Mono<Void> deleteByToken(String token);
 }

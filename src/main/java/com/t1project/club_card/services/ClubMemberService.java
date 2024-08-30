@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Service
 public class ClubMemberService {
 
@@ -42,6 +45,8 @@ public class ClubMemberService {
     }
 
     public Mono<ClubMember> registerClubMember(RegisterRequestDTO registerRequestDTO) {
+        Set<String> privilege = new HashSet<>();
+        privilege.add("STANDARD");
         final ClubMember clubMember = ClubMember.builder()
                 .email(registerRequestDTO.getEmail())
                 .password(Utils.bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()))
@@ -49,9 +54,10 @@ public class ClubMemberService {
                 .lastName(registerRequestDTO.getLastName())
                 .phoneNumber(registerRequestDTO.getPhone())
                 .birthday(null)
-                .privilege("STANDARD")
+                .privilege(privilege)
                 .isLocked(false)
                 .role("ROLE_USER")
+                .template(null)
                 .build();
         System.out.println(clubMember.toString());
         return clubMemberRepository.save(clubMember);

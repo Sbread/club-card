@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -19,6 +20,6 @@ public class ResponseClubMemberDTO {
     private String phone;
     private LocalDate birthDay;
     private String role;
-    private String privilege;
+    private Set<String> privilege;
     private boolean locked;
 }

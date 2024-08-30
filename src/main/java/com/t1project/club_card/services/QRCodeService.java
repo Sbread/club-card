@@ -22,8 +22,7 @@ public class QRCodeService {
                     clubMember.getEmail(),
                     clubMember.isLocked(),
                     clubMember.getRole(),
-                    clubMember.getPrivilege()
-            );
+                    String.join(", ", clubMember.getPrivilege()));
             final QRCodeWriter qrCodeWriter = new QRCodeWriter();
             final BitMatrix bitMatrix = qrCodeWriter.encode(textToEncode, BarcodeFormat.QR_CODE, width, height);
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
