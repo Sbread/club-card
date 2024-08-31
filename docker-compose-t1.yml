@@ -4,17 +4,13 @@ services:
     container_name: postgres_db_24
     restart: on-failure
     environment:
-      POSTGRES_USER: camp
-      POSTGRES_PASSWORD: 1234
-    ports:
-      - "5444:5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data_24:/var/lib/postgresql/data
 
   springboot-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: 10.4.56.75:32768/24_backend_t1
     restart: on-failure:5
     ports:
       - "8080:8080"
@@ -22,8 +18,8 @@ services:
       - postgres
     environment:
       - ENV_DATASOURCE_URL=r2dbc:postgresql://postgres:5432/club_cards
-      - ENV_DATASOURCE_USERNAME=camp
-      - ENV_DATASOURCE_PASSWORD=1234
+      - ENV_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - ENV_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
 
 volumes:
   postgres_data_24:
