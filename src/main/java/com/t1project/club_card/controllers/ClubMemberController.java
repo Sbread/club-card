@@ -9,6 +9,7 @@ import com.t1project.club_card.services.JWTService;
 import com.t1project.club_card.services.QRCodeService;
 import com.t1project.club_card.services.TemplatePrivilegeService;
 import com.t1project.club_card.utils.Utils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping
 @CrossOrigin
+@Slf4j
 public class ClubMemberController {
 
     @Autowired

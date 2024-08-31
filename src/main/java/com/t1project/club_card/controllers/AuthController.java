@@ -11,6 +11,7 @@ import com.t1project.club_card.security.CustomReactiveAuthenticationManager;
 import com.t1project.club_card.services.JWTService;
 import com.t1project.club_card.services.RefreshTokenService;
 import com.t1project.club_card.utils.Utils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -24,6 +25,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @CrossOrigin
+@Slf4j
 public class AuthController {
 
     @Autowired
